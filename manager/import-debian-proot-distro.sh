@@ -25,7 +25,7 @@ label_distro_download_finish=$(printf "$label_distro_download_finish" "Debian")
 
 if [ "$first" != 1 ];then
 
-show_progress_dialog steps-one-label "Copiando o Debian do Proot-Distro e baixando pacotes necessários para o Andistro" 15 \
+show_progress_dialog steps-one-label "Copiando o Debian do Proot-Distro e baixando pacotes necessários para o Andistro" 12 \
     'sleep 1' \
     'sleep 1' \
     "mkdir -p \"$folder\"" \
@@ -37,10 +37,8 @@ show_progress_dialog steps-one-label "Copiando o Debian do Proot-Distro e baixan
     "bash $bin apt install dialog sudo wget nano locales gpg curl ca-certificates -y" \
     "sed -i \"s|command+=\" LANG=\$system_icu_lang_code_env.UTF-8\"|command+=\" LANG=$system_icu_lang_code_env.UTF-8\"|g\" $bin" \
     "rm -rf $folder/root/.bash_profile" \
-    "cp \"$config_file/.bash_profile\" $folder/root/.bash_profile" \
-    "sed -i \"s|distro_name=\"\"|distro_name=\"$distro_name\"|g\" $folder/root/.bash_profile" \
-    "sed -i \"s|LANG=\"\"|LANG=\"$system_icu_lang_code_env.UTF-8\"|g\" $folder/root/.bash_profile" \
-    "bash $bin \"locale-gen $system_icu_lang_code_env.UTF-8\""
+    "cp \"$config_file/.bash_profile\" $folder/root/.bash_profile"
+    
 fi
 
 rm -rf $folder/etc/apt/sources.list
