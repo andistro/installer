@@ -55,7 +55,6 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
         if ls "$PREFIX/var/lib/andistro/manager/start-"* 1>/dev/null 2>&1; then
             OPTIONS=(s "$label_andistro_start_system" # Iniciar o sistema
-                     d "$label_andistro_uninstall_system" # Desinstalar o sistema
                      c "$label_settings" # Configurações
                      h "$label_help" # Ajuda
                     )
@@ -104,12 +103,6 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                andistro
             ;;
 
-            # Desinstalar o sistema
-            d)
-                andistro -d
-                andistro
-            ;;
-
             # Instalar sistemas
             i)
                 andistro -i
@@ -118,16 +111,27 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
             # Configurações
             c)
                 while true; do
-                    # porque não tem o while true; do aqui?
-                    OPTIONS=(1 "$label_autoboot_andistro" # Inicialização / autoboot
-                             2 "$label_andistro_adb_configs" # Configurações do ADB
-                             3 "$label_andistro_update" # Atualizar o AnDistro
-                             4 "$label_andistro_check_permissions" # Verificar permissões
-                             5 "$label_andistro_install_apps" # Instalar aplicativos adicionais
-                             6 "Backups e importação" # Backups e importação
-                             7 "$label_andistro_uninstall" # Desinstalar o AnDistro
-                            )
-
+                    if ls "$PREFIX/var/lib/andistro/manager/start-debian" 1>/dev/null 2>&1; then
+                        OPTIONS=(1 "$label_autoboot_andistro" # Inicialização / autoboot
+                                 2 "$label_andistro_adb_configs" # Configurações do ADB
+                                 3 "$label_andistro_update" # Atualizar o AnDistro
+                                 4 "$label_andistro_check_permissions" # Verificar permissões
+                                 5 "$label_andistro_install_apps" # Instalar aplicativos adicionais
+                                 6 "Backups e importação" # Backups e importação
+                                 7 "$label_andistro_uninstall_system" # Desinstalar o Debian
+                                 * "$label_andistro_uninstall" # Desinstalar o AnDistro
+                                )
+                    else
+                        OPTIONS=(1 "$label_autoboot_andistro" # Inicialização / autoboot
+                                 2 "$label_andistro_adb_configs" # Configurações do ADB
+                                 3 "$label_andistro_update" # Atualizar o AnDistro
+                                 4 "$label_andistro_check_permissions" # Verificar permissões
+                                 5 "$label_andistro_install_apps" # Instalar aplicativos adicionais
+                                 6 "Backups e importação" # Backups e importação
+                                 * "$label_andistro_uninstall" # Desinstalar o AnDistro
+                                )
+                    fi
+                    
                     CHOICE=$(dialog --no-shadow --clear \
                                     --title "$label_settings" \
                                     --cancel-label "$label_back" \
@@ -449,11 +453,6 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                         # Importar do proot-distro
                                                         2)
                                                             while true; do
-                                                                # Caminho usado para instalar o debian no proot-distro
-                                                                # /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian
-                                                                # Caminho onde o AnDistro instala o Debian
-                                                                # /data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable
-                                                                # O Proot-distro não cria uma pasta para a versão, então a pasta debian do proot-distro é o equivalente ao stable do andistro.
                                                                 
                                                                 dialog --no-shadow --title "Backups e importação" \
                                                                        --backtitle "$label_warning" \
@@ -471,54 +470,46 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                                 mkdir -p "$PREFIX/var/lib/andistro/manager/$distro_name"
                                                                 mkdir -p "/sdcard/termux/andistro/manager/$distro_name/$distro_version"
 
-                                                                # Menu de Ambiente Gráfico
-                                                                OPTIONS=(1 "Já tenho uma interface definida"
-                                                                         2 "${label_environments_select_default} (XFCE4)" # Interface padrão
-                                                                         3 "${label_environments_select_light} (LXDE)" # Interface leve
-                                                                        )
+                                                                if ls "$folder/root/.vnc/xstartup" 1>/dev/null 2>&1; then
+                                                                    # Menu de Ambiente Gráfico
+                                                                    OPTIONS=(1 "${label_environments_select_default} (XFCE4)" # Interface padrão
+                                                                             2 "${label_environments_select_light} (LXDE)" # Interface leve
+                                                                            )
 
-                                                                CHOICE=$(dialog --no-shadow --clear \
-                                                                                --title "$TITLE" \
-                                                                                --cancel-label "$label_back" \
-                                                                                --menu "$label_environments_select" \
-                                                                                $dialog_height $dialog_width $dialog_choice_height \
-                                                                                "${OPTIONS[@]}" \
-                                                                                2>&1 >/dev/tty)
+                                                                    CHOICE=$(dialog --no-shadow --clear \
+                                                                                    --title "$TITLE" \
+                                                                                    --cancel-label "$label_back" \
+                                                                                    --menu "$label_environments_select" \
+                                                                                    $dialog_height $dialog_width $dialog_choice_height \
+                                                                                    "${OPTIONS[@]}" \
+                                                                                    2>&1 >/dev/tty)
 
-                                                                    dialog_retorno=$?  # ← Captura código de retorno
-                
-                                                                    if [ $dialog_retorno -eq 1 ]; then
-                                                                        clear # ← Clear se cancelado
-                                                                        break
-                                                                        exit 0
+                                                                        dialog_retorno=$?  # ← Captura código de retorno
+                    
+                                                                        if [ $dialog_retorno -eq 1 ]; then
+                                                                            clear # ← Clear se cancelado
+                                                                            break
+                                                                            exit 0
+                                                                        fi
+                                                                        clear
+                                                                        case $CHOICE in
+                                                                            # Interface padrão - XFCE4
+                                                                            1)
+                                                                                config_environment="xfce4"
+                                                                            ;;
+
+                                                                            # Interface leve - LXDE
+                                                                            2)	
+                                                                                config_environment="lxde"
+                                                                            ;;
+                                                                        esac
                                                                     fi
-                                                                    clear
-                                                                    case $CHOICE in
-                                                                        # Interface padrão - Nenhuma
-                                                                        1)
-                                                                            config_environment="null"
-                                                                        ;;
-                                                                        # Interface padrão - XFCE4
-                                                                        2)
-                                                                            config_environment="xfce4"
-                                                                        ;;
-
-                                                                        # Interface leve - LXDE
-                                                                        3)	
-                                                                            config_environment="lxde"
-                                                                        ;;
-                                                                    esac
 
                                                                     bash $PREFIX/var/lib/andistro/manager/import-$distro_name-proot-distro.sh "$config_file" "$andistro_files" "$distro_name" "$bin" "$folder" "$config_environment" "$distro_version"
                                                                     clear
                                                                     andistro
                                                                     exit 0
                                                             done
-                                                        ;;
-
-                                                        # Importar compactado
-                                                        3)
-                                                            # um arquivo tar.xz com o sistema debian será usado para configurar o sistema
                                                         ;;
                                                     esac      
                                                 done
@@ -534,8 +525,14 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
                         ;;
 
-                        # Desisntalar o AnDistro
+                        # Desisnstalar o Debian
                         7)
+                            andistro -d
+                            andisitro
+                        ;;
+
+                        # Desisntalar o AnDistro
+                        *)
                             andistro -d andistro
                         ;;
                     esac
@@ -1972,17 +1969,20 @@ elif [ -r /etc/os-release ] && grep -Eq '^ID=(debian|ubuntu)' /etc/os-release; t
 #>>># Menu principal do Andistro
     if [ -z "$1" ]; then
         # Verifica se o vncserver está rodando
-        if pgrep -x "Xtigervnc" > /dev/null; then
+        if ls "/bin/vncserver" 1>/dev/null 2>&1; then
             OPTIONS=(s "$label_andistro_start_vnc" # Iniciar o VNC 
-                     k "$label_andistro_finish_vnc" #Finalizar o VNC 
+                     p "$label_andistro_change_vnc_password" # Trocar a senha do VNC
+                     h "$label_help" # Ajuda
+                     e "$label_andistro_debian_exit" #Encerrar o Debian"
+                    )
+        elif pgrep -x "Xtigervnc" > /dev/null; then
+            OPTIONS=(k "$label_andistro_finish_vnc" #Finalizar o VNC 
                      p "$label_andistro_change_vnc_password" # Trocar a senha do VNC
                      h "$label_help" # Ajuda
                      e "$label_andistro_debian_exit" #Encerrar o Debian"
                     )
         else
-            OPTIONS=(s "$label_andistro_start_vnc" # Iniciar o VNC 
-                     p "$label_andistro_change_vnc_password" # Trocar a senha do VNC
-                     h "$label_help" # Ajuda
+            OPTIONS=(h "$label_help" # Ajuda
                      e "$label_andistro_debian_exit" #Encerrar o Debian"
                     )
         fi
@@ -2041,7 +2041,10 @@ elif [ -r /etc/os-release ] && grep -Eq '^ID=(debian|ubuntu)' /etc/os-release; t
             ;;
 
             # Finaliza o Debian e retorna ao Termux
-            e) exit && exit;;
+            e) 
+                andistro --boot vnc --kill
+                exec exit 0
+            ;;
         esac
     fi
 
