@@ -1337,16 +1337,6 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                         termux-open "/sdcard/termux/andistro/apps/$app_basename"
                     ;;
 
-                    # Baixar o avnc pelo F-Droid
-                    install-avnc)
-                        app_name="AVNC"
-                        app_packagename="com.gaurav.avnc"
-                        app_stable_link=$(get_stable_f_droid_download_link "$app_packagename")
-                        app_basename=$(basename $app_stable_link)
-                        show_progress_dialog steps-multi-label-alt 1 "${label_install_script_download}\n\n → ${app_name}" 'sleep 2 && wget -P "/sdcard/termux/andistro/apps" "$app_stable_link"'
-                        termux-open "/sdcard/termux/andistro/apps/$app_basename"
-                    ;;
-
                     # Baixar um dos aplicativos VNC pelo F-Droid
                     install-vnc)
                         local is_interno=false
@@ -1546,17 +1536,18 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                             #HOME_AUTOBOT="$HOME/.andistro_autoboot"
 
                             # Remove linha antiga (se existir)
-                            sed -i '/^\[ -x "$HOME\/.andistro_autoboot" \] && /d' "$BASHRC_FILE"
+                            sed -i "/^\[\[ -z \\\"\$ANDISTRO_ASKED\\\" && -x \\\"\$PREFIX\\/var\\/lib\\/andistro\\/manager\\/\\.config\\/autoboot\\\" \]\\] && export ANDISTRO_ASKED=1 && exec \\\"\$PREFIX\\/var\\/lib\\/andistro\\/manager\\/\\.config\\/autoboot\\\"$/d" "$BASHRC_FILE"
+
 
                             # Backup
                             cp "$BASHRC_FILE" "$BASHRC_FILE.bak.$(date +%Y%m%d_%H%M%S)"
 
                             # Copia autoboot para HOME
                             #cp "$SOURCE_AUTOBOOT" "$HOME_AUTOBOT"
-                            chmod +x "$HOME_AUTOBOT"
+                            chmod +x "$SOURCE_AUTOBOOT"
 
                             # INSERE SÓ 1 LINHA!
-                            echo '[[ -z "$ANDISTRO_ASKED" && -x "$HOME/.andistro_autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"' >> "$BASHRC_FILE"
+                            echo '[[ -z "$ANDISTRO_ASKED" && -x "$PREFIX/var/lib/andistro/manager/.config/autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"' >> "$BASHRC_FILE"
 
                             chmod 644 "$BASHRC_FILE"
                             andistro alerta setup-apply
@@ -1579,12 +1570,12 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
                         if [ $dialog_retorno -eq 0 ]; then
                             BASHRC_FILE="$PREFIX/etc/bash.bashrc"
-                            HOME_AUTOBOT="$HOME/.andistro_autoboot"
+                            #HOME_AUTOBOT="$HOME/.andistro_autoboot"
 
-                            cp "$BASHRC_FILE" "$BASHRC_FILE.bak.$(date +%Y%m%d_%H%M%S)"
+                            #cp "$BASHRC_FILE" "$BASHRC_FILE.bak.$(date +%Y%m%d_%H%M%S)"
 
                             # Remove LINHA EXATA (com escaping)
-                            sed -i '/\[\[ *\$ANDISTRO_ASKED[^]]*\]\] *&& *export *ANDISTRO_ASKED=1 *&& *exec *"[^"]*\autoboot"/d' "$BASHRC_FILE"
+                            sed -i "/^\[\[ -z \\\"\$ANDISTRO_ASKED\\\" && -x \\\"\$PREFIX\\/var\\/lib\\/andistro\\/manager\\/\\.config\\/autoboot\\\" \]\\] && export ANDISTRO_ASKED=1 && exec \\\"\$PREFIX\\/var\\/lib\\/andistro\\/manager\\/\\.config\\/autoboot\\\"$/d" "$BASHRC_FILE"
                             
                             # OU mais simples: grep -v (remove linha exata)
                             grep -v 'ANDISTRO_ASKED.*andistro_autoboot' "$BASHRC_FILE" > "$BASHRC_FILE.tmp" && mv "$BASHRC_FILE.tmp" "$BASHRC_FILE"
@@ -2043,7 +2034,8 @@ elif [ -r /etc/os-release ] && grep -Eq '^ID=(debian|ubuntu)' /etc/os-release; t
             # Finaliza o Debian e retorna ao Termux
             e) 
                 andistro --boot vnc --kill
-                exec exit 0
+                jobs -p | while read pid; do kill $pid 2>/dev/null; done
+                exit 0
             ;;
         esac
     fi
