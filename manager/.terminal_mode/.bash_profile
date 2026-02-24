@@ -4,7 +4,7 @@ distro_name="$1"
 distro_theme="$2"
 system_lang_code="$3"
 system_lang_code_env="${system_lang_code//-/_}"
-export LANG=$system_icu_lang_code_env.UTF-8
+LANG=""
 system_lang_code_env_lower=$(echo "$LANG" | sed 's/\..*//' | sed 's/_/-/' | tr '[:upper:]' '[:lower:]')
 # Fonte modular configuração global
 source "/usr/local/lib/andistro/global"

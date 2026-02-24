@@ -38,8 +38,10 @@ show_progress_dialog steps-one-label "Copiando o Debian do Proot-Distro e baixan
     "sed -i \"s|command+=\" LANG=\$system_icu_lang_code_env.UTF-8\"|command+=\" LANG=$system_icu_lang_code_env.UTF-8\"|g\" $bin" \
     "rm -rf $folder/root/.bash_profile" \
     "cp \"$config_file/.bash_profile\" $folder/root/.bash_profile"
-    
+
 fi
+
+sed -i "s|LANG=\"\"|LANG=\"$system_icu_lang_code_env.UTF-8\"|g" $folder/root/.bash_profile
 
 rm -rf $folder/etc/apt/sources.list
 
