@@ -471,6 +471,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                                 mkdir -p "/sdcard/termux/andistro/manager/$distro_name/$distro_version"
 
                                                                 if ls "$folder/root/.vnc/xstartup" 1>/dev/null 2>&1; then
+                                                                else
                                                                     # Menu de Ambiente Gráfico
                                                                     OPTIONS=(1 "${label_environments_select_default} (XFCE4)" # Interface padrão
                                                                              2 "${label_environments_select_light} (LXDE)" # Interface leve
@@ -1073,7 +1074,6 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     # Usuário escolheu "Sim"
                     echo "$label_wait"
                     distro_name="debian"
-                    distro_name_upper="Debian"
                     label_uninstalling_system=$(printf "$label_uninstalling_system" "$distro_name_upper")
                 else
                     # Usuário escolheu "Não"
