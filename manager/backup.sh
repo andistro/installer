@@ -24,8 +24,11 @@ VERSION_CODENAME=$(grep '^VERSION_CODENAME=' "$OS_RELEASE" 2>/dev/null | cut -d=
 [ -z "$VERSION_CODENAME" ] && VERSION_CODENAME="unknown"
 
 DEBIAN_LANG_FILE="$DEBIAN_DIR/etc/default/locale"
+DEBIAN_LANG_FILE="$DEBIAN_DIR/etc/default/locale"
+
+DEBIAN_LANG_FILE="$DEBIAN_DIR/etc/default/locale"
 if [ -f "$DEBIAN_LANG_FILE" ]; then
-    DEBIAN_LANG=$(grep '^LANG=' "$DEBIAN_LANG_FILE" 2>/dev/null | head -n1 | cut -d= -f2 | tr -d '"')
+    DEBIAN_LANG=$(grep '^LANG=' "$DEBIAN_LANG_FILE" 2>/dev/null | head -n1 | cut -d= -f2 | tr -d '"' | tr '_' '-')
 else
     DEBIAN_LANG="unknown"
 fi
