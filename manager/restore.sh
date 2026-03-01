@@ -1,5 +1,8 @@
 #!/data/data/com.termux/files/usr/bin/bash
 # chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh" && bash "$PREFIX/var/lib/andistro/manager/restore.sh"
+#rm -rf $PREFIX/var/lib/andistro/manager/debian/stable
+#!/data/data/com.termux/files/usr/bin/bash
+# chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh" && bash "$PREFIX/var/lib/andistro/manager/restore.sh"
 clear
 
 source "$PREFIX/var/lib/andistro/lib/share/global"
@@ -155,41 +158,41 @@ if [ -z "$SENHA" ]; then
     exit 1
 fi
 
-RESTORE_TEMP=$(mktemp "$TMPDIR_DEFAULT/andistro-restore-XXXXXX.tar.gz")
-
-# Variáveis globais para mensagem de erro
-GPG_ERROR=""
-TAR_ERROR=""
-
-show_progress_dialog steps-multi-label-alt 4 \
+# 1/2 – preparar
+echo "[1/2] Preparando restauração" >> "$LOG_FILE"
+show_progress_dialog steps-multi-label-alt 1 \
     "Preparando restauração..." \
-    "echo \"[1/4] Preparando restauração\" >> \"$LOG_FILE\"; sleep 1" \
-    "Descriptografando backup selecionado..." \
-    "echo \"[2/4] Descriptografando $SELECTED_FILE\" >> \"$LOG_FILE\"; GPG_ERROR=\$(echo \"$SENHA\" | gpg --batch --yes --passphrase-fd 0 --decrypt \"$SELECTED_FILE\" > \"$RESTORE_TEMP\" 2>&1); status_gpg=\$?; echo \"\$GPG_ERROR\" >> \"$LOG_FILE\"; if [ \$status_gpg -ne 0 ]; then echo \"Erro na descriptografia (código \$status_gpg).\" >> \"$LOG_FILE\"; rm -f \"$RESTORE_TEMP\"; exit 1; fi" \
-    "Limpando diretório atual e extraindo arquivos..." \
-    "echo \"[3/4] Limpando $DEBIAN_DIR e extraindo\" >> \"$LOG_FILE\"; rm -rf \"$DEBIAN_DIR\"; mkdir -p \"$DEBIAN_DIR\"; TAR_ERROR=\$(tar -xzf \"$RESTORE_TEMP\" -C \"$DEBIAN_DIR\" 2>&1 >> \"$LOG_FILE\"); status_tar=\$?; echo \"\$TAR_ERROR\" >> \"$LOG_FILE\"; if [ \$status_tar -ne 0 ]; then echo \"Erro ao extrair o tar (código \$status_tar).\" >> \"$LOG_FILE\"; rm -rf \"$DEBIAN_DIR\"; rm -f \"$RESTORE_TEMP\"; exit 1; fi" \
-    "Finalizando restauração..." \
-    "echo \"[4/4] Limpando temporários\" >> \"$LOG_FILE\"; rm -f \"$RESTORE_TEMP\"; sleep 1"
+    "sleep 1"
 
-status_restore=$?
+# 2/2 – descriptografar e extrair em pipeline (igual ao teste manual)
+echo "[2/2] Descriptografando e extraindo $SELECTED_FILE" >> "$LOG_FILE"
 
-if [ $status_restore -ne 0 ]; then
-    # Escolhe mensagem mais amigável
-    if printf '%s\n' "$GPG_ERROR" | grep -qi "Bad session key"; then
+rm -rf "$DEBIAN_DIR"
+mkdir -p "$DEBIAN_DIR"
+
+GPG_TAR_ERROR=$(echo "$SENHA" | gpg --batch --yes --passphrase-fd 0 \
+    --decrypt "$SELECTED_FILE" 2>>"$LOG_FILE" | \
+    tar -xzf - -C "$DEBIAN_DIR" 2>&1)
+status_pipeline=$?
+
+echo "$GPG_TAR_ERROR" >> "$LOG_FILE"
+
+if [ $status_pipeline -ne 0 ]; then
+    if printf '%s\n' "$GPG_TAR_ERROR" | grep -qi "Bad session key"; then
         MSG="Falha na restauração.\n\nSenha incorreta para o backup selecionado."
-    elif printf '%s\n' "$GPG_ERROR" | grep -qi "decryption failed"; then
+    elif printf '%s\n' "$GPG_TAR_ERROR" | grep -qi "decryption failed"; then
         MSG="Falha na restauração.\n\nErro ao descriptografar o backup (senha incorreta ou arquivo corrompido)."
-    elif [ -n "$TAR_ERROR" ]; then
-        MSG="Falha na restauração.\n\nErro ao extrair o backup:\n$TAR_ERROR"
+    elif printf '%s\n' "$GPG_TAR_ERROR" | grep -qi "not in gzip format"; then
+        MSG="Falha na restauração.\n\nErro ao extrair o backup: conteúdo não está em formato .tar.gz.\n\nDetalhe:\n$GPG_TAR_ERROR"
     else
-        MSG="Falha na restauração.\n\nOcorreu um erro inesperado durante o processo."
+        MSG="Falha na restauração.\n\nErro ao restaurar o backup:\n$GPG_TAR_ERROR"
     fi
-
+    rm -rf "$DEBIAN_DIR"
     dialog --no-shadow --msgbox "$MSG" $dialog_height $dialog_width
     exit 1
 fi
 
-# Sentinel simples: exige pelo menos /etc/os-release dentro do rootfs restaurado
+# Sentinel / sucesso
 if [ -d "$DEBIAN_DIR" ] && [ -f "$DEBIAN_DIR/etc/os-release" ]; then
     dialog --no-shadow --msgbox "Restauração concluída com sucesso.\n\nBackup: $SELECTED_FILE\nDestino: $DEBIAN_DIR\n\nLog: $LOG_FILE" \
         $dialog_height $dialog_width
