@@ -92,7 +92,7 @@ if [ -f "$GPG_TEMP" ]; then
     MODEL_CLEAN=$(echo "$device_model" | tr ' ' '_' | tr '/' '_')
     ARCH_CLEAN=$(echo "$android_architecture" | tr ' ' '_' | tr '/' '_')
 
-    BACKUP_NAME="[ANDISTRO]_Debian-${VERSION_CODENAME}-${LANG_CODE}_-_${MANUF_CLEAN}-${MODEL_CLEAN}-${ARCH_CLEAN}_-_${FILE_CHECKSUM}_-_${TIMESTAMP}.tar.gz.gpg"
+    BACKUP_NAME="[ANDISTRO]__Debian_${VERSION_CODENAME}_${LANG_CODE}__-__${MANUF_CLEAN}_${MODEL_CLEAN}_${ARCH_CLEAN}__-__${FILE_CHECKSUM}__-__${TIMESTAMP}.tar.gz.gpg"
     ARQ="$BACKUP_DIR/$BACKUP_NAME"
 
     mv "$GPG_TEMP" "$ARQ"
