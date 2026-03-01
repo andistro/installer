@@ -33,7 +33,7 @@ update_progress() {
     printf "\r[%s%s] %3d%%" "$filled_bar" "$empty_bar" "$percent"
 }
 
-total_steps=44  # Número total de etapas que você quer monitorar
+total_steps=45  # Número total de etapas que você quer monitorar
 current_step=0
 
 {
@@ -357,8 +357,17 @@ fi
     ((current_step++))
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 44 especifica a versão do Andistro instalada
-    echo '1.1-32 alpha' | tee "$PREFIX/var/lib/andistro/VERSION"
+    # 44 verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
+    if ! dpkg -l | grep -qw gnupg; then
+        pkg install --no-install-recommends gnupg -y > /dev/null 2>&1
+    fi
+    ((current_step++))
+    update_progress "$current_step" "$total_steps"; sleep 0.1
+
+    # 45 verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
+    if ! dpkg -l | grep -qw coreutils; then
+        pkg install --no-install-recommends coreutils -y > /dev/null 2>&1
+    fi
     ((current_step++))
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
@@ -366,6 +375,5 @@ fi
 }
 
 clear
-
 
 andistro 
