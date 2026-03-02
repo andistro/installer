@@ -3,7 +3,7 @@
 #rm -rf $PREFIX/var/lib/andistro/manager/debian/stable
 #!/data/data/com.termux/files/usr/bin/bash
 # chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh" && bash "$PREFIX/var/lib/andistro/manager/restore.sh"
-clear
+#clear
 
 source "$PREFIX/var/lib/andistro/lib/share/global"
 
