@@ -304,6 +304,15 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
                                 if [ $dialog_retorno -eq 0 ]; then # Se confirmar
                                     while true; do
+                                        if [[ "$andistro_version" == *"alpha"* ]]; then
+                                            restore_update="alpha"
+                                        elif [[ "$andistro_version" == *"beta"* ]]; then
+                                            restore_update="beta"
+                                        elif [[ "$andistro_version" == *"main"* ]]; then
+                                            restore_update="main"
+                                        else
+                                            restore_update=""
+                                        fi
                                         if [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ]; then
                                             # ✅ AnDistro existe → só backup
                                             chmod +x "$PREFIX/var/lib/andistro/manager/backup.sh"
@@ -343,6 +352,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             # ✅ AnDistro NÃO existe, proot NÃO existe → só compactado
                                             chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
                                             bash "$PREFIX/var/lib/andistro/manager/restore.sh" # Roda o script de restauração
+                                            andistro -u ${restore_update}-dialog #andistro -u main-dialog
                                             andistro
                                         fi
                                     done

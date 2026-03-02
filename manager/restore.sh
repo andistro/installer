@@ -107,8 +107,7 @@ for f in $(ls -t "$BACKUP_DIR"/"[ANDISTRO]__Debian_"*.tar.gz.gpg 2>/dev/null); d
 done
 
 if [ ${#DIALOG_OPTS[@]} -eq 0 ]; then
-    dialog --no-shadow --msgbox "Nenhum backup válido encontrado (checksum ou arquitetura não compatíveis)." \
-        $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "Nenhum backup válido encontrado (checksum ou arquitetura não compatíveis)." $dialog_height $dialog_width
     exit 1
 fi
 
@@ -120,8 +119,8 @@ while [ $i -lt ${#DIALOG_OPTS[@]} ]; do
 done
 
 CHOICE=$(dialog --no-shadow --menu "Selecione o backup para restaurar:\n(Apenas arquivos com checksum válido e mesma arquitetura)" \
-    $dialog_height $dialog_width $dialog_choice_height \
-    "${MENU_OPTS[@]}" 3>&1 1>&2 2>&3)
+                $dialog_height $dialog_width $dialog_choice_height \
+                "${MENU_OPTS[@]}" 3>&1 1>&2 2>&3)
 
 [ $? -ne 0 ] && exit 1
 
@@ -136,33 +135,29 @@ while [ $i -lt ${#DIALOG_OPTS[@]} ]; do
 done
 
 if [ -z "$SELECTED_FILE" ]; then
-    dialog --no-shadow --msgbox "Erro interno ao localizar o arquivo selecionado." \
-        $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "Erro interno ao localizar o arquivo selecionado." $dialog_height $dialog_width
     exit 1
 fi
 
 SENHA=$(dialog --no-shadow --insecure --cancel-label "Exibir" \
-    --passwordbox "Digite a senha para restaurar o backup selecionado:" \
-    $dialog_height $dialog_width 3>&1 1>&2 2>&3)
+               --passwordbox "Digite a senha para restaurar o backup selecionado:" \
+               $dialog_height $dialog_width 3>&1 1>&2 2>&3)
 ret=$?
 
 if [ $ret -eq 1 ]; then
     SENHA=$(dialog --no-shadow --cancel-label "Ocultar" \
-        --inputbox "Senha (VISÍVEL) para restaurar o backup:" \
-        $dialog_height $dialog_width 3>&1 1>&2 2>&3)
+                   --inputbox "Senha (VISÍVEL) para restaurar o backup:" \
+                   $dialog_height $dialog_width 3>&1 1>&2 2>&3)
 fi
 
 if [ -z "$SENHA" ]; then
-    dialog --no-shadow --msgbox "Senha vazia. Restauração cancelada." \
-        $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "Senha vazia. Restauração cancelada." $dialog_height $dialog_width
     exit 1
 fi
 
 # 1/2 – preparar
 echo "[1/2] Preparando restauração" >> "$LOG_FILE"
-show_progress_dialog steps-multi-label-alt 1 \
-    "Preparando restauração..." \
-    "sleep 1"
+show_progress_dialog steps-multi-label 1 "Preparando restauração..." "sleep 1"
 
 # 2/2 – descriptografar e extrair em pipeline (igual ao teste manual)
 echo "[2/2] Descriptografando e extraindo $SELECTED_FILE" >> "$LOG_FILE"
@@ -171,8 +166,8 @@ rm -rf "$DEBIAN_DIR"
 mkdir -p "$DEBIAN_DIR"
 
 GPG_TAR_ERROR=$(echo "$SENHA" | gpg --batch --yes --passphrase-fd 0 \
-    --decrypt "$SELECTED_FILE" 2>>"$LOG_FILE" | \
-    tar -xzf - -C "$DEBIAN_DIR" 2>&1)
+                                    --decrypt "$SELECTED_FILE" 2>>"$LOG_FILE" | \
+                                    tar -xzf - -C "$DEBIAN_DIR" 2>&1)
 status_pipeline=$?
 
 echo "$GPG_TAR_ERROR" >> "$LOG_FILE"
@@ -194,11 +189,12 @@ fi
 
 # Sentinel / sucesso
 if [ -d "$DEBIAN_DIR" ] && [ -f "$DEBIAN_DIR/etc/os-release" ]; then
-    dialog --no-shadow --msgbox "Restauração concluída com sucesso.\n\nBackup: $SELECTED_FILE\nDestino: $DEBIAN_DIR\n\nLog: $LOG_FILE" \
-        $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "Restauração concluída com sucesso." $dialog_height $dialog_width
+    cp "$PREFIX/var/lib/andistro/manager/.config/debian-based/start-distro" $PREFIX/var/lib/andistro/manager/start-debian
+    sed -i "s|command+=\" LANG=\$system_icu_lang_code_env.UTF-8\"|command+=\" LANG=$system_icu_lang_code_env.UTF-8\"|g" $PREFIX/var/lib/andistro/manager/start-debian
+    chmod +x $PREFIX/var/lib/andistro/manager/start-debian
     exit 0
 else
-    dialog --no-shadow --msgbox "Erro ao restaurar o backup (conteúdo incompleto ou inválido)." \
-        $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "Erro ao restaurar o backup (conteúdo incompleto ou inválido)." $dialog_height $dialog_width
     exit 1
 fi
