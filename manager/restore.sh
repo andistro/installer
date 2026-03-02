@@ -17,6 +17,9 @@ TMPDIR_DEFAULT="$BACKUP_BASE/tmp"
 
 mkdir -p "$BACKUP_DIR" "$LOG_DIR" "$TMPDIR_DEFAULT"
 
+dialog --no-shadow --infobox "Aguarde, estamos procurando os arquivos de backup..." $dialog_height $dialog_width
+sleep 1 # Pequena pausa para o infobox ser exibido antes de processar os arquivos
+
 TIMESTAMP_RUN=$(date +'%d%m%Y-%H%M%S')
 SCRIPT_NAME=$(basename "$0"); SCRIPT_NAME="${SCRIPT_NAME%%.*}"
 LOG_FILE="$LOG_DIR/${SCRIPT_NAME}_${TIMESTAMP_RUN}.txt"
@@ -157,43 +160,34 @@ fi
 
 # 1/2 – preparar
 echo "[1/2] Preparando restauração" >> "$LOG_FILE"
-show_progress_dialog steps-multi-label 1 "Preparando restauração..." "sleep 1"
+# 1/2 – preparar + descriptografar
+show_progress_dialog steps-multi-label 2 \
+    "Preparando e verificando backup..." "echo 'Preparando' >> \"$LOG_FILE\"; sleep 0.5" \
+    "Descriptografando backup..." "echo 'Descriptografando' >> \"$LOG_FILE\"; echo \"$SENHA\" | gpg --batch --yes --passphrase-fd 0 --decrypt \"$SELECTED_FILE\" > \"$TMPDIR_DEFAULT/restore.tar.gz\" 2>>\"$LOG_FILE\""
 
-# 2/2 – descriptografar e extrair em pipeline (igual ao teste manual)
-echo "[2/2] Descriptografando e extraindo $SELECTED_FILE" >> "$LOG_FILE"
+# 2/2 – extrair sem barra de progresso
+echo "[2/2] Extraindo backup para $DEBIAN_DIR" >> "$LOG_FILE"
 
 rm -rf "$DEBIAN_DIR"
 mkdir -p "$DEBIAN_DIR"
 
-GPG_TAR_ERROR=$(echo "$SENHA" | gpg --batch --yes --passphrase-fd 0 \
-                                    --decrypt "$SELECTED_FILE" 2>>"$LOG_FILE" | \
-                                    tar -xzf - -C "$DEBIAN_DIR" 2>&1)
-status_pipeline=$?
+tar -xzf "$TMPDIR_DEFAULT/restore.tar.gz" -C "$DEBIAN_DIR" 2>>"$LOG_FILE"
+status_extract=$?
 
-echo "$GPG_TAR_ERROR" >> "$LOG_FILE"
-
-if [ $status_pipeline -ne 0 ]; then
-    if printf '%s\n' "$GPG_TAR_ERROR" | grep -qi "Bad session key"; then
-        MSG="Falha na restauração.\n\nSenha incorreta para o backup selecionado."
-    elif printf '%s\n' "$GPG_TAR_ERROR" | grep -qi "decryption failed"; then
-        MSG="Falha na restauração.\n\nErro ao descriptografar o backup (senha incorreta ou arquivo corrompido)."
-    elif printf '%s\n' "$GPG_TAR_ERROR" | grep -qi "not in gzip format"; then
-        MSG="Falha na restauração.\n\nErro ao extrair o backup: conteúdo não está em formato .tar.gz.\n\nDetalhe:\n$GPG_TAR_ERROR"
-    else
-        MSG="Falha na restauração.\n\nErro ao restaurar o backup:\n$GPG_TAR_ERROR"
-    fi
-    rm -rf "$DEBIAN_DIR"
+if [ $status_extract -ne 0 ]; then
+    MSG="Falha na restauração.\n\nErro ao extrair o backup.\nVerifique se o arquivo está íntegro."
     dialog --no-shadow --msgbox "$MSG" $dialog_height $dialog_width
+    rm -rf "$DEBIAN_DIR"
     exit 1
 fi
 
 # Sentinel / sucesso
 if [ -d "$DEBIAN_DIR" ] && [ -f "$DEBIAN_DIR/etc/os-release" ]; then
     dialog --no-shadow --msgbox "Restauração concluída com sucesso." $dialog_height $dialog_width
-    cp "$PREFIX/var/lib/andistro/manager/.config/debian-based/start-distro" $PREFIX/var/lib/andistro/manager/start-debian
-    sed -i "s|command+=\" LANG=\$system_icu_lang_code_env.UTF-8\"|command+=\" LANG=$system_icu_lang_code_env.UTF-8\"|g" $PREFIX/var/lib/andistro/manager/start-debian
-    chmod +x $PREFIX/var/lib/andistro/manager/start-debian
-    exit 0
+    cp "$PREFIX/var/lib/andistro/manager/.config/debian-based/start-distro" "$PREFIX/var/lib/andistro/manager/start-debian"
+    sed -i "s|command+=\" LANG=\$system_icu_lang_code_env.UTF-8\"|command+=\" LANG=$system_icu_lang_code_env.UTF-8\"|g" "$PREFIX/var/lib/andistro/manager/start-debian"
+    chmod +x "$PREFIX/var/lib/andistro/manager/start-debian"
+    exit 10
 else
     dialog --no-shadow --msgbox "Erro ao restaurar o backup (conteúdo incompleto ou inválido)." $dialog_height $dialog_width
     exit 1

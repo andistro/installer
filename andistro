@@ -317,8 +317,17 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             # ✅ AnDistro existe → só backup
                                             chmod +x "$PREFIX/var/lib/andistro/manager/backup.sh"
                                             bash "$PREFIX/var/lib/andistro/manager/backup.sh" # Roda o script de backup/importação
-                                            break
-                                            exit 0
+                                            ret=$?
+                                            clear
+
+                                            if [ $ret -eq 0 ]; then
+                                                # sucesso: volta ao menu de configurações
+                                                break
+                                            else
+                                                # erro: também volta ao menu de configurações (ou mostra outro dialog)
+                                                break
+                                            fi
+
                                         elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
                                             # ✅ AnDistro NÃO existe, mas proot existe → import proot + compactado
                                             OPTIONS=(1 "Importar do proot-distro" #
@@ -344,19 +353,30 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                 1) andistro --setup import-proot ;;
                                                 2) 
                                                     chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
-                                                    bash "$PREFIX/var/lib/andistro/manager/restore.sh" # Roda o script de restauração
-                                                    break
-                                                    exit 0
+                                                    bash "$PREFIX/var/lib/andistro/manager/restore.sh"
+                                                    ret=$?
+                                                    clear
+                                                    if [ $ret -eq 10 ]; then
+                                                        andistro   # voltar ao menu inicial
+                                                        exit 0
+                                                    else
+                                                        break      # voltar ao menu de configurações
+                                                    fi
                                                 ;;
                                             esac
 
                                         else
                                             # ✅ AnDistro NÃO existe, proot NÃO existe → só compactado
                                             chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
-                                            bash "$PREFIX/var/lib/andistro/manager/restore.sh" # Roda o script de restauração
-                                            andistro -u ${restore_update}-dialog #andistro -u main-dialog
-                                            break
-                                            exit 0
+                                            bash "$PREFIX/var/lib/andistro/manager/restore.sh"
+                                            ret=$?
+                                            clear
+                                            if [ $ret -eq 10 ]; then
+                                                andistro   # voltar ao menu inicial
+                                                exit 0
+                                            else
+                                                break
+                                            fi
                                         fi
                                     done
                                 else # Se NÃO confirmar
