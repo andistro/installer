@@ -318,6 +318,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             chmod +x "$PREFIX/var/lib/andistro/manager/backup.sh"
                                             bash "$PREFIX/var/lib/andistro/manager/backup.sh" # Roda o script de backup/importação
                                             andistro
+                                            exit 0
                                         elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
                                             # ✅ AnDistro NÃO existe, mas proot existe → import proot + compactado
                                             OPTIONS=(1 "Importar do proot-distro" #
@@ -345,6 +346,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                     chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
                                                     bash "$PREFIX/var/lib/andistro/manager/restore.sh" # Roda o script de restauração
                                                     andistro
+                                                    exit 0
                                                 ;;
                                             esac
 
@@ -354,6 +356,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             bash "$PREFIX/var/lib/andistro/manager/restore.sh" # Roda o script de restauração
                                             andistro -u ${restore_update}-dialog #andistro -u main-dialog
                                             andistro
+                                            exit 0
                                         fi
                                     done
                                 else # Se NÃO confirmar
