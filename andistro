@@ -305,20 +305,51 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                 if [ $dialog_retorno -eq 0 ]; then # Se confirmar
                                     while true; do
                                         if [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ]; then
-                                            # ✅ AnDistro existe → só backup/restaurar
-                                            
+                                            # ✅ AnDistro existe → só backup
+                                            chmod +x "$PREFIX/var/lib/andistro/manager/backup.sh"
+                                            bash "$PREFIX/var/lib/andistro/manager/backup.sh" # Roda o script de backup/importação
+                                            andistro
                                         elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
                                             # ✅ AnDistro NÃO existe, mas proot existe → import proot + compactado
+                                            OPTIONS=(1 "Importar do proot-distro" #
+                                                     2 "Restaurar backup" #
+                                                    )
+                                            CHOICE=$(dialog --no-shadow --clear \
+                                                            --title "$label_andistro_backups_import" \
+                                                            --cancel-label "$label_back" \
+                                                            --menu "$label_choose_one_of_the_option:" \
+                                                            $dialog_height $dialog_width $dialog_choice_height \
+                                                            "${OPTIONS[@]}" \
+                                                            2>&1 >/dev/tty)
+                                                    
+                                            dialog_retorno=$?  # ← Captura código de retorno
+                                            if [ $dialog_retorno -eq 1 ]; then
+                                                clear # ← Clear se cancelado
+                                                break
+                                                exit 0
+                                            fi
+                                            clear
+
+                                            case $CHOICE in
+                                                1) andistro --setup import-proot ;;
+                                                2) 
+                                                    chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
+                                                    bash "$PREFIX/var/lib/andistro/manager/restore.sh" # Roda o script de restauração
+                                                    andistro
+                                                ;;
+                                            esac
+
                                         else
                                             # ✅ AnDistro NÃO existe, proot NÃO existe → só compactado
-                                            
+                                            chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
+                                            bash "$PREFIX/var/lib/andistro/manager/restore.sh" # Roda o script de restauração
+                                            andistro
                                         fi
                                     done
                                 else # Se NÃO confirmar
                                     clear # ← Clear se cancelado
                                     break
                                     exit 0
-
                                 fi
 
 
@@ -406,79 +437,8 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                 done
             ;;
 
-            c)
-                while true; do
-                    
-                    
-
-                    case $CHOICE in
-
-
-                        # Backups e importação
-                        6)
-                            while true; do
-                                
-                                
-                                if [ $dialog_retorno -eq 0 ]; then
-                                    while true; do
-                                        
-
-                                        clear
-                                        case $CHOICE in
-
-                                            # Importar
-                                            2)
-                                                while true; do
-                                                    if [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ]; then
-                                                        # ✅ AnDistro existe → só backup/restaurar
-                                                        OPTIONS=(1 "Restaurar backup do Debian do AnDistro" # 
-                                                                )
-                                                    elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
-                                                        # ✅ AnDistro NÃO existe, mas proot existe → import proot + compactado
-                                                        OPTIONS=(2 "Importar do proot-distro" #
-                                                                 3 "Importar compactado" #
-                                                                )
-                                                    else
-                                                        # ✅ AnDistro NÃO existe, proot NÃO existe → só compactado
-                                                        OPTIONS=(3 "Importar compactado" #
-                                                                )
-                                                    fi
-                                                    
-                                                    CHOICE=$(dialog --no-shadow --clear \
-                                                                    --title "Backups e importação" \
-                                                                    --cancel-label "$label_back" \
-                                                                    --menu "$label_choose_one_of_the_option:" \
-                                                                    $dialog_height $dialog_width $dialog_choice_height \
-                                                                    "${OPTIONS[@]}" \
-                                                                    2>&1 >/dev/tty)
-                                                    
-                                                    dialog_retorno=$?  # ← Captura código de retorno
-                                                    if [ $dialog_retorno -eq 1 ]; then
-                                                        clear # ← Clear se cancelado
-                                                        break
-                                                        exit 0
-                                                    fi
-                                                    clear
-                                                    case $CHOICE in
-
-                                                        # Restaurar backup do Debian do AnDistro
-                                                        1)
-                                                        ;;
-                                                    esac      
-                                                done
-                                            ;;
-                                        esac
-                                    done
-
-                            done
-
-                        ;;
-                    esac
-                done
-            ;;
-
-            h)
-
+            # Página de ajuda
+            3)
                 dialog --no-shadow --title "$label_help" \
                        --backtitle "$label_help" \
                        --yes-label "$label_proceed" \
