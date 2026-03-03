@@ -613,7 +613,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                 echo -e "\n$label_wait"
                 echo -e "\n$label_andistro_update_version"
                 echo
-                
+
                 update_progress() {
                     current_step=$1
                     total_steps=$2
@@ -918,8 +918,11 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
             
             chmod +x "$PREFIX/var/lib/andistro/lib/share/global"
             source "$PREFIX/var/lib/andistro/lib/share/global"
+            
+            echo
             echo -e "$label_update_finish"
             echo -e "\n$label_andistro_start_command_info"
+            echo
         ;;
 
         # Comando para instalar uma distro
