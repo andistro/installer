@@ -832,8 +832,10 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     rm -rf "$HOME/app-andistro_setup/.gitignore"
                     rm -rf "$HOME/app-andistro_setup/.gitattributes"
                     mv -f "$HOME/app-andistro_setup/andistro" "$PREFIX/bin/andistro"
-                    mv -f "$HOME/app-andistro_setup/termos.sh" "$HOME/termos.sh"
+                    rm -rf "$HOME/app-andistro_setup/termos.sh"
+                    rm -rf "$HOME/andistro_setup"
                     rsync -a "$HOME/app-andistro_setup/" "$PREFIX/var/lib/andistro/"
+                    rm -rf "$HOME/app-andistro_setup"
                     ((current_step++))
                     update_progress "$current_step" "$total_steps"; sleep 0.1
 
