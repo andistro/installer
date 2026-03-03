@@ -56,7 +56,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
         elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
             # Se o Debian NÃO estiver instalado, mas o proot-distro estiver → opção de importar do proot-distro
             OPTIONS=(1 "$label_andistro_install_system" # => Instalar o sistema
-                     4 "$label_andistro_import_proot_distro" # => Importar do proot-distro
+                     4 "Importar do proot-distro" # => Importar do proot-distro
                      2 "$label_settings" # Configurações
                      3 "$label_help" # Ajuda
                     )
@@ -1814,7 +1814,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                    --backtitle "$label_warning" \
                                    --ok-label "$label_confirm" \
                                    --msgbox "$label_andistro_import_proot_distro" \
-                                   $dialog_height $dialog_width
+                                   30 $dialog_width
                             clear
 
                             if ls "$folder/root/.vnc/xstartup" 1>/dev/null 2>&1; then # Se o xstartup existir
@@ -1826,7 +1826,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                         )
                                 CHOICE=$(dialog --no-shadow --clear \
                                                 --title "$TITLE" \
-                                                --cancel-label "$label_back" \
+                                                --cancel-label "$current_label_close" \
                                                 --menu "$label_environments_select" \
                                                 $dialog_height $dialog_width $dialog_choice_height \
                                                 "${OPTIONS[@]}" \
@@ -1836,6 +1836,10 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
                                 if [ $dialog_retorno -eq 1 ]; then
                                     clear # ← Clear se cancelado
+                                    if [ "$is_interno" = false ]; then
+                                        cat /data/data/com.termux/files/usr/etc/motd
+                                        echo -e "\n$label_andistro_start_command_info"
+                                    fi
                                     break
                                     exit 0
                                 fi
