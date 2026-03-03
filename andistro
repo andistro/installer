@@ -52,18 +52,21 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
             OPTIONS=(1 "$label_andistro_start_system" # => Iniciar o sistema
                      2 "$label_settings" # Configurações
                      3 "$label_help" # Ajuda
+                     5 "$label_feedback" # Feedback
                     )
         elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
             # Se o Debian NÃO estiver instalado, mas o proot-distro estiver → opção de importar do proot-distro
             OPTIONS=(1 "$label_andistro_install_system" # => Instalar o sistema
-                     4 "Importar do proot-distro" # => Importar do proot-distro
+                     4 "$label_andistro_import_proot_distro" # => Importar do proot-distro
                      2 "$label_settings" # Configurações
                      3 "$label_help" # Ajuda
+                     5 "$label_feedback" # Feedback
                     )
         else # Se o Debian NÃO estiver instalado
             OPTIONS=(1 "$label_andistro_install_system" # => Instalar o sistema
                      2 "$label_settings" # Configurações
                      3 "$label_help" # Ajuda
+                     5 "$label_feedback" # Feedback
                     )
         fi
 
@@ -307,7 +310,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                        --yes-label "$label_confirm" \
                                        --no-label "$label_close" \
                                        --yesno "$label_andistro_backups_import_alert" \
-                                       25 $dialog_width
+                                       $dialog_height $dialog_width
                                 
                                 dialog_retorno=$?
 
@@ -324,17 +327,17 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                         fi
                                         if [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ]; then
                                             # ✅ AnDistro existe → só backup
-                                            dialog --no-shadow --title "$label_andistro_backups_import" \
+                                            dialog --no-shadow --title "$label_andistro_backup" \
                                                    --backtitle "$label_warning" \
                                                    --yes-label "$label_confirm" \
                                                    --no-label "$label_close" \
-                                                   --yesno "Tem certeza que deseja fazer backup do Debian?\nCaso confirme, a próxima será para definir a senha. Não existe a opção de voltar, somente de fazer o backup." \
-                                                   25 $dialog_width
+                                                   --yesno "$label_andistro_backup_desc" \
+                                                   $dialog_height $dialog_width
                                             dialog_retorno=$?
 
                                             if [ $dialog_retorno -eq 0 ]; then # Se confirmar
                                                 chmod +x "$PREFIX/var/lib/andistro/manager/backup.sh"
-                                                bash "$PREFIX/var/lib/andistro/manager/backup.sh" # Roda o script de backup/importação
+                                                bash "$PREFIX/var/lib/andistro/manager/backup.sh" # Roda o script de backup
                                                 clear
                                                 break 2
                                                 exit 0
@@ -345,8 +348,8 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             fi
                                         elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
                                             # ✅ AnDistro NÃO existe, mas proot existe → import proot + compactado
-                                            OPTIONS=(1 "Importar do proot-distro" #
-                                                     2 "Restaurar backup" #
+                                            OPTIONS=(1 "$label_andistro_import_proot_distro" #
+                                                     2 "$label_andistro_restore" #
                                                     )
                                             CHOICE=$(dialog --no-shadow --clear \
                                                             --title "$label_andistro_backups_import" \
@@ -400,7 +403,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                        --yes-label "$label_confirm" \
                                        --no-label "$label_close" \
                                        --yesno "$label_andistro_adb_configs_desc" \
-                                       25 $dialog_width
+                                       $dialog_height $dialog_width
                                 
                                 dialog_retorno=$?
 
@@ -497,6 +500,11 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
             # Importar do proot-distros
             4) andistro --setup import-proot-distro-debian --start-menu ;;
+
+            5)
+                am start -a android.intent.action.VIEW -d "https://forms.gle/R85frE8bbbF3mrdN9"
+            # 
+            ;;
 
         esac
         exit 0
@@ -1304,8 +1312,8 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                             esac
                         done
                         while true; do
-                            OPTIONS=(1 "Pela Play Store" # 
-                                     2 "Por aqui mesmo" # 
+                            OPTIONS=(1 "$label_andistro_install_apps_playtore" # 
+                                     2 "$label_andistro_install_apps_here" # 
                                     )
 
                             # Define label_close baseado no contexto
@@ -1320,7 +1328,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             --title "$label_andistro_install_apps" \
                                             --ok-label "$label_confirm" \
                                             --cancel-label "$current_label_close" \
-                                            --menu "Antes de prosseguir, escolha como instalar os aplicativos necessários:" \
+                                            --menu "$label_andistro_install_apps_desc" \
                                             20 $dialog_width $dialog_choice_height \
                                             "${OPTIONS[@]}" \
                                             2>&1 >/dev/tty)
@@ -1351,7 +1359,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                         --title "$label_andistro_install_apps" \
                                                         --ok-label "$label_install" \
                                                         --cancel-label "$label_back" \
-                                                        --menu "Escolha um dos aplicativos, clique em instalar. Depois retorne ao Termux" \
+                                                        --menu "$label_andistro_install_apps_choose" \
                                                         20 $dialog_width $dialog_choice_height \
                                                         "${OPTIONS[@]}" \
                                                         2>&1 >/dev/tty)
@@ -1404,7 +1412,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                         --title "$label_andistro_install_apps" \
                                                         --ok-label "$label_install" \
                                                         --cancel-label "$label_back" \
-                                                        --menu "Escolha um dos aplicativos, clique em instalar. Depois retorne ao Termux" \
+                                                        --menu "$label_andistro_install_apps_choose" \
                                                         20 $dialog_width $dialog_choice_height \
                                                         "${OPTIONS[@]}" \
                                                         2>&1 >/dev/tty)
@@ -1572,7 +1580,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                    --yes-label "$label_open" \
                                    --no-label "$label_close" \
                                    --yesno "$label_andistro_adb_pair_desc" \
-                                   25 $dialog_width
+                                   $dialog_height $dialog_width
                             dialog_retorno=$?
 
                             if [ $dialog_retorno -eq 0 ]; then

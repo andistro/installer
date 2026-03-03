@@ -7,8 +7,6 @@
 
 source "$PREFIX/var/lib/andistro/lib/share/global"
 
-title_progress="Progresso"
-
 DEBIAN_DIR="$PREFIX/var/lib/andistro/manager/debian/stable"
 BACKUP_BASE="/sdcard/termux/andistro"
 BACKUP_DIR="$BACKUP_BASE/backups"
@@ -17,7 +15,7 @@ TMPDIR_DEFAULT="$BACKUP_BASE/tmp"
 
 mkdir -p "$BACKUP_DIR" "$LOG_DIR" "$TMPDIR_DEFAULT"
 
-dialog --no-shadow --infobox "Aguarde, estamos procurando os arquivos de backup..." $dialog_height $dialog_width
+dialog --no-shadow --infobox "$label_andistro_searching_backups" $dialog_height $dialog_width
 sleep 1 # Pequena pausa para o infobox ser exibido antes de processar os arquivos
 
 TIMESTAMP_RUN=$(date +'%d%m%Y-%H%M%S')
@@ -110,7 +108,7 @@ for f in $(ls -t "$BACKUP_DIR"/"[ANDISTRO]__Debian_"*.tar.gz.gpg 2>/dev/null); d
 done
 
 if [ ${#DIALOG_OPTS[@]} -eq 0 ]; then
-    dialog --no-shadow --msgbox "Nenhum backup válido encontrado (checksum ou arquitetura não compatíveis)." $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "$label_andistro_no_valid_backup" $dialog_height $dialog_width
     exit 1
 fi
 
@@ -121,7 +119,7 @@ while [ $i -lt ${#DIALOG_OPTS[@]} ]; do
     i=$((i+3))
 done
 
-CHOICE=$(dialog --no-shadow --menu "Selecione o backup para restaurar:\n(Apenas arquivos com checksum válido e mesma arquitetura)" \
+CHOICE=$(dialog --no-shadow --menu "$label_andistro_select_backup_to_restore" \
                 $dialog_height $dialog_width $dialog_choice_height \
                 "${MENU_OPTS[@]}" 3>&1 1>&2 2>&3)
 
@@ -138,23 +136,23 @@ while [ $i -lt ${#DIALOG_OPTS[@]} ]; do
 done
 
 if [ -z "$SELECTED_FILE" ]; then
-    dialog --no-shadow --msgbox "Erro interno ao localizar o arquivo selecionado." $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "$label_andistro_internal_error_select_file" $dialog_height $dialog_width
     exit 1
 fi
 
-SENHA=$(dialog --no-shadow --insecure --cancel-label "Exibir" \
-               --passwordbox "Digite a senha para restaurar o backup selecionado:" \
+SENHA=$(dialog --no-shadow --insecure --cancel-label "$label_show" \
+               --passwordbox "$label_andistro_restore_password 🙈" \
                $dialog_height $dialog_width 3>&1 1>&2 2>&3)
 ret=$?
 
 if [ $ret -eq 1 ]; then
-    SENHA=$(dialog --no-shadow --cancel-label "Ocultar" \
-                   --inputbox "Senha (VISÍVEL) para restaurar o backup:" \
+    SENHA=$(dialog --no-shadow --cancel-label "$label_hide" \
+                   --inputbox "$label_andistro_restore_password 🙉" \
                    $dialog_height $dialog_width 3>&1 1>&2 2>&3)
 fi
 
 if [ -z "$SENHA" ]; then
-    dialog --no-shadow --msgbox "Senha vazia. Restauração cancelada." $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "$label_andistro_restore_password_empty" $dialog_height $dialog_width
     exit 1
 fi
 
@@ -162,8 +160,8 @@ fi
 echo "[1/2] Preparando restauração" >> "$LOG_FILE"
 # 1/2 – preparar + descriptografar
 show_progress_dialog steps-multi-label 2 \
-    "Preparando e verificando backup..." "echo 'Preparando' >> \"$LOG_FILE\"; sleep 0.5" \
-    "Descriptografando backup..." "echo 'Descriptografando' >> \"$LOG_FILE\"; echo \"$SENHA\" | gpg --batch --yes --passphrase-fd 0 --decrypt \"$SELECTED_FILE\" > \"$TMPDIR_DEFAULT/restore.tar.gz\" 2>>\"$LOG_FILE\""
+    "${label_andistro_preparing_backup}" "echo 'Preparando' >> \"$LOG_FILE\"; sleep 0.5" \
+    "${label_andistro_decrypting_backup}" "echo 'Descriptografando' >> \"$LOG_FILE\"; echo \"$SENHA\" | gpg --batch --yes --passphrase-fd 0 --decrypt \"$SELECTED_FILE\" > \"$TMPDIR_DEFAULT/restore.tar.gz\" 2>>\"$LOG_FILE\""
 
 # 2/2 – extrair sem barra de progresso
 echo "[2/2] Extraindo backup para $DEBIAN_DIR" >> "$LOG_FILE"
@@ -175,20 +173,19 @@ tar -xzf "$TMPDIR_DEFAULT/restore.tar.gz" -C "$DEBIAN_DIR" 2>>"$LOG_FILE"
 status_extract=$?
 
 if [ $status_extract -ne 0 ]; then
-    MSG="Falha na restauração.\n\nErro ao extrair o backup.\nVerifique se o arquivo está íntegro."
-    dialog --no-shadow --msgbox "$MSG" $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "$label_andistro_restore_failed" $dialog_height $dialog_width
     rm -rf "$DEBIAN_DIR"
     exit 1
 fi
 
 # Sentinel / sucesso
 if [ -d "$DEBIAN_DIR" ] && [ -f "$DEBIAN_DIR/etc/os-release" ]; then
-    dialog --no-shadow --msgbox "Restauração concluída com sucesso." $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "$label_andistro_restore_success" $dialog_height $dialog_width
     cp "$PREFIX/var/lib/andistro/manager/.config/debian-based/start-distro" "$PREFIX/var/lib/andistro/manager/start-debian"
     sed -i "s|command+=\" LANG=\$system_icu_lang_code_env.UTF-8\"|command+=\" LANG=$system_icu_lang_code_env.UTF-8\"|g" "$PREFIX/var/lib/andistro/manager/start-debian"
     chmod +x "$PREFIX/var/lib/andistro/manager/start-debian"
     exit 10
 else
-    dialog --no-shadow --msgbox "Erro ao restaurar o backup (conteúdo incompleto ou inválido)." $dialog_height $dialog_width
+    dialog --no-shadow --msgbox "$label_andistro_restore_invalid_content" $dialog_height $dialog_width
     exit 1
 fi

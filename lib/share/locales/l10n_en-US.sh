@@ -26,6 +26,7 @@ distro_desc_line_t12=" -s initializes Debian."
 distro_desc_line_t13=" -d uninstalls Debian."
 distro_desc_line_t14=" -i installs Debian."
 
+label_andistro_internal_error_select_file="Internal error while locating the selected file."
 label_andistro_install_system="Install the Debian system"       # Instalar o sistema Debian
 label_andistro_start_system="Start the Debian system"            # Iniciar o sistema Debian
 label_andistro_termianl_viewer="View as terminal"
@@ -81,7 +82,33 @@ label_andistro_backups_import_backup_system="Backup the system"
 label_andistro_backups_import_restore_system="Import or restore"
 label_andistro_import_proot_distro="The import will configure the Debian from proot-distro to adapt to AnDistro's settings and this will cause: \n-New repositories to be added; \nInstallation of packages that may not be installed in your version of Debian. \n-A complete update of the entire system will be made. \n- The import will not delete the Debian you installed. For security reasons, the importer makes a copy of the system."
 label_andistro_bakup="Backup of Debian"
+label_andistro_backup_desc="Are you sure you want to backup the Debian system?\nIf confirmed, the next step will be to set a password. There is no option to go back, only to make the backup."
+label_andistro_backup_password="Enter a strong password to encrypt the backup:\n\nRecommended that it contains numbers, uppercase letters, lowercase letters and symbols (@#!$%&*)."
+label_andistro_backup_password_empty="Empty password. Backup cancelled."
+label_andistro_backup_starting="Starting Debian backup..."
+label_andistro_backup_compacting="Backing up: compacting Debian system"
+label_andistro_backup_encrypting="Encrypting backup with GPG (AES256)..."
+label_andistro_backup_verifying="Verifying generated file..."
+label_andistro_backup_success="Backup completed successfully."
+label_andistro_backup_error="Error creating backup."
+label_andistro_no_valid_backup="No valid backup found (checksum or architecture not compatible)."
+label_andistro_select_backup_to_restore="Select the backup to restore:\n(Only files with a valid checksum and same architecture)"
 label_andistro_restore_import="Restore or Import Debian"
+label_andistro_searching_backups="Please wait, we are searching for backup files..."
+label_andistro_restore="Restore backup"
+label_andistro_restore_password="Enter the password to restore the selected backup"
+label_andistro_restore_password_empty="Password is empty. Restoration cancelled."
+label_andistro_preparing_backup="Preparing and verifying backup..."
+label_andistro_decrypting_backup="Decrypting backup..."
+label_andistro_restore_failed="Restoration failed.\n\nError extracting the backup.\nCheck if the file is intact."
+label_andistro_restore_success="Restoration completed successfully."
+label_andistro_restore_invalid_content="Error restoring the backup (incomplete or invalid content)."
+label_andistro_import_proot_distro="Import from proot-distro"
+
+label_andistro_install_apps_desc="Before proceeding, choose how to install the necessary applications:"
+label_andistro_install_apps_choose="Choose one of the applications, click install. Then return to Termux"
+label_andistro_install_apps_playtore="Through Play Store"
+label_andistro_install_apps_here="Here itself"
 
 ## AndDistro distros exclusive
 distro_desc_line_d1=" --boot command to start some configuration."
@@ -124,6 +151,8 @@ label_system_setup="Configuring the system..."
 label_xdg_user_dirs_setup="Configuring default folders for the system..."
 
 # Information
+label_view_log="View log"
+label_step_slow="This step may take a while."
 commands_available_to_you="Available commands for you:"
 label_command_not_found="Command not found:"
 label_dialog_display_menu_sugestion="Resolution suggestions"
@@ -145,6 +174,7 @@ label_notify_adb_pair_port_code_title="Enter the port code"
 label_notify_adb_pair_port_code_desc="The code that appears right after $wlan_ip_localhost:_____"
 label_termux_api_not_installed="Termux:API is not installed. Install it so that some configurations in AnDistro can be performed."
 label_termux_api_desc="Termux:API is essential for AnDistro and Debian to work in these initial configurations. If it is not installed on your phone, click the <Install> button to download the app and then install it.\nIf you do not want to install it or have already installed it, click <Ignore>, and the app installation will be ignored.\n\nYou can download and install it at any time through AnDistro settings."
+label_not_found="not found."
 
 ## Timezone
 label_system_timezone="Timezone"
@@ -192,6 +222,8 @@ label_select_no_to_choose_other_resolution="Select 'No' to choose another resolu
 label_start_dialog_display="If you want to start the server with the interactive screen, use the command:\nandistro --boot vnc --dialog-display"
 
 # Single-word messages
+label_file="File"
+label_size="Size"
 label_error="Error"
 label_done="Finished"
 label_width="Width"
@@ -240,7 +272,9 @@ label_backup="Backup"
 label_restore="Restore"
 label_import="Import"
 label_export="Export"
-
+label_feedback="Feedback"
+label_show="Show"
+label_hide="Hide"
 
 # Messages in brackets
 label_detected="[Detected]"
