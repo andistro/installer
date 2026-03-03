@@ -50,7 +50,12 @@ pacmd load-module module-aaudio-sink
 virgl_test_server_android > /dev/null 2>&1 &
 VIRGL_PID=$!
 
-auto_cmd="andistro"
+
+if grep -q 'VARIANT="AnDistro"' $PREFIX/var/lib/andistro/manager/debian/stable/etc/os-release 2>/dev/null; then
+    auto_cmd="andistro; exec bash --login"
+else
+    auto_cmd="exec bash --login"
+fi
 
 ## unset LD_PRELOAD in case termux-exec is installed
 unset LD_PRELOAD
@@ -97,7 +102,7 @@ command+=" LANG=$system_icu_lang_code_env.UTF-8"
 command+=" /bin/bash"
 com="$@"
 if [ -z "$1" ];then
-    $command -lc "$auto_cmd; exec bash --login"
+    $command -lc "$auto_cmd"
 else
     $command -lc "$com"
 fi

@@ -42,6 +42,9 @@ if [ "$first" != 1 ];then
 	} | dialog --no-shadow --gauge "$label_distro_download_finish" $dialog_height $dialog_width
 fi
 
+echo 'VARIANT="AnDistro"
+VARIANT_ID="andistro"' >> $folder/etc/os-release
+
 rm -rf $folder/etc/apt/sources.list
 
 echo "deb http://deb.debian.org/debian $distro_version main contrib non-free non-free-firmware

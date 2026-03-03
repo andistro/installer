@@ -1,8 +1,5 @@
 #!/bin/bash
 # GITHUB Version
-#inxi_out=$(inxi -F 2>/dev/null)
-#andistro_version="main"
-#andistro_version="alpha"
 if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then
 if ! grep -q "^# Andistro Extra keys$" ~/.termux/termux.properties 2>/dev/null; then
   cat << 'EOF' >> ~/.termux/termux.properties
@@ -20,7 +17,6 @@ sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
 
 sed -i "s/^# hide-soft-keyboard-on-startup = true/hide-soft-keyboard-on-startup = true/"  ~/.termux/termux.properties
 
-
 termux-reload-settings
 termux-reload-settings </dev/tty 
 
@@ -33,7 +29,6 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
     source "$PREFIX/var/lib/andistro/lib/share/global"
     # Limpa logs antigos automaticamente (silencioso)
     cleanup_old_logs
-
 
     # Diretório do Andistro
     andistro_files="$PREFIX/var/lib/andistro"
@@ -53,16 +48,25 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 #>>># Menu principal do Andistro
     if [ -z "$1" ]; then
 
-        if ls "$PREFIX/var/lib/andistro/manager/start-"* 1>/dev/null 2>&1; then
-            OPTIONS=(s "$label_andistro_start_system" # Iniciar o sistema
-                     d "$label_andistro_uninstall_system" # Desinstalar o sistema
-                     c "$label_settings" # Configurações
-                     h "$label_help" # Ajuda
+        if ls "$PREFIX/var/lib/andistro/manager/start-debian" 1>/dev/null 2>&1; then # Se o Debian estiver instalado
+            OPTIONS=(1 "$label_andistro_start_system" # => Iniciar o sistema
+                     2 "$label_settings" # Configurações
+                     3 "$label_help" # Ajuda
+                     5 "$label_feedback" # Feedback
                     )
-        else
-            OPTIONS=(i "$label_andistro_install_system" # Instalar o sistema
-                     c "$label_settings" # Configurações
-                     h "$label_help" # Ajuda
+        elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
+            # Se o Debian NÃO estiver instalado, mas o proot-distro estiver → opção de importar do proot-distro
+            OPTIONS=(1 "$label_andistro_install_system" # => Instalar o sistema
+                     4 "$label_andistro_import_proot_distro" # => Importar do proot-distro
+                     2 "$label_settings" # Configurações
+                     3 "$label_help" # Ajuda
+                     5 "$label_feedback" # Feedback
+                    )
+        else # Se o Debian NÃO estiver instalado
+            OPTIONS=(1 "$label_andistro_install_system" # => Instalar o sistema
+                     2 "$label_settings" # Configurações
+                     3 "$label_help" # Ajuda
+                     5 "$label_feedback" # Feedback
                     )
         fi
 
@@ -98,35 +102,49 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
         # Opções do menu
         case $CHOICE in
-            # Iniciar o sistema
-            s) 
-               andistro -s
-               andistro
-            ;;
 
-            # Desinstalar o sistema
-            d)
-                andistro -d
-                andistro
-            ;;
-
-            # Instalar sistemas
-            i)
-                andistro -i
+            1)
+                if ls "$PREFIX/var/lib/andistro/manager/start-debian" 1>/dev/null 2>&1; then # Se o Debian estiver instalado
+                    andistro -s
+                    andistro
+                else # Se o Debian NÃO estiver instalado
+                    andistro -i
+                fi
             ;;
         
             # Configurações
-            c)
+            2)
                 while true; do
-                    # porque não tem o while true; do aqui?
-                    OPTIONS=(1 "$label_autoboot_andistro" # Inicialização / autoboot
-                             2 "$label_andistro_adb_configs" # Configurações do ADB
-                             3 "$label_andistro_update" # Atualizar o AnDistro
-                             4 "$label_andistro_check_permissions" # Verificar permissões
-                             5 "$label_andistro_install_apps" # Instalar aplicativos adicionais
-                             6 "Backups e importação" # Backups e importação
-                             7 "$label_andistro_uninstall" # Desinstalar o AnDistro
-                            )
+
+                    # Autoboot
+                    if grep -qF '[[ -z "$ANDISTRO_ASKED" && -x "$PREFIX/var/lib/andistro/manager/.config/autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"' "$PREFIX/etc/bash.bashrc" 2>/dev/null; then # Se NÃO estiver ativo, ATIVA o autoboot
+                        label_autoboot_andistro="$label_disable_autoboot_andistro" # Desabilitar o autoboot
+                    else # Se estiver ativo, DESATIVA o autoboot
+                        label_autoboot_andistro="$label_enable_autoboot_andistro" # Habilitar o autoboot
+                    fi
+                    
+                    if ls "$PREFIX/var/lib/andistro/manager/start-debian" 1>/dev/null 2>&1; then
+                        label_andistro_backups_import="$label_andistro_bakup"
+                        OPTIONS=(1 "$label_autoboot_andistro" # Inicialização / autoboot
+                                 2 "$label_andistro_check_permissions" # Verificar permissões
+                                 3 "$label_andistro_install_apps" # Instalar aplicativos adicionais
+                                 4 "$label_andistro_update" # Atualizar o AnDistro
+                                 5 "$label_andistro_backups_import" # Backups e importação
+                                 6 "$label_andistro_adb_configs" # Configurações do ADB
+                                 7 "$label_andistro_uninstall_system" # Desinstalar o Debian
+                                 8 "$label_andistro_uninstall" # Desinstalar o AnDistro
+                                )
+                    else
+                        label_andistro_backups_import="$label_andistro_restore_import"
+                        OPTIONS=(1 "$label_autoboot_andistro" # Inicialização / autoboot
+                                 2 "$label_andistro_check_permissions" # Verificar permissões
+                                 3 "$label_andistro_install_apps" # Instalar aplicativos adicionais
+                                 4 "$label_andistro_update" # Atualizar o AnDistro
+                                 5 "$label_andistro_backups_import" # Backups e importação
+                                 6 "$label_andistro_adb_configs" # Configurações do ADB
+                                 7 "$label_andistro_uninstall" # Desinstalar o AnDistro
+                                )
+                    fi
 
                     CHOICE=$(dialog --no-shadow --clear \
                                     --title "$label_settings" \
@@ -145,151 +163,20 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     clear
 
                     case $CHOICE in
-                        #Configurações de inicialização
+                        # Autoboot - configurações de inicialização
                         1)
-                            while true; do
-                                OPTIONS=(1 "$label_enable_autoboot_andistro" # Habilitar a mensagem de inicialização do AnDistro
-                                        2 "$label_disable_autoboot_andistro" # Desativar a mensagem de inicialização do AnDistro
-                                        )
-
-                                CHOICE=$(dialog --no-shadow --clear \
-                                                --title "$label_autoboot_andistro" \
-                                                --cancel-label "$label_back" \
-                                                --menu "$label_autoboot_andistro_desc" \
-                                                $dialog_height $dialog_width $dialog_choice_height \
-                                                "${OPTIONS[@]}" \
-                                                2>&1 >/dev/tty)
-                                dialog_retorno=$?  # ← Captura código de retorno
-                                
-                                if [ $dialog_retorno -eq 1 ]; then
-                                    clear # ← Clear se cancelado
-                                    break
-                                    exit 0
-                                fi
-                                clear
                             
-                                case $CHOICE in
-                                    # Habilita a mensagem de inicialização do AnDistro
-                                    1) andistro --setup autoboot ;;
-
-                                    # Desativa a mensagem de inicialização do AnDistro
-                                    2) andistro --setup autoboot-disable ;;
-                                esac
-                            done
-                        ;;
-
-                        # Configurações do ADB
-                        2)
-                            while true; do
-                                dialog --no-shadow --title "$label_andistro_adb_pair_title" \
-                                       --backtitle "$label_warning" \
-                                       --yes-label "$label_confirm" \
-                                       --no-label "$label_close" \
-                                       --yesno "$label_andistro_adb_configs_desc" \
-                                       25 $dialog_width
-                                
-                                dialog_retorno=$?
-
-                                if [ $dialog_retorno -eq 0 ]; then
-                                    while true; do
-                                        OPTIONS=(1 "$label_andistro_enable_dev_mode" # Habilitar o modo desenvolvedor
-                                                2 "$label_andistro_adb_pair" # Pareamento do ADB
-                                                3 "$label_andistro_adb_connect" # Conectar ao ADB
-                                                4 "$label_andistro_disable_ghost_process_monitor" # Desativar o monitor de processos fantasmas
-                                                )
-
-                                        CHOICE=$(dialog --no-shadow --clear \
-                                                    --title "$label_andistro_adb_configs" \
-                                                    --cancel-label "$label_back" \
-                                                    --menu "$label_choose_one_of_the_option:" \
-                                                    $dialog_height $dialog_width $dialog_choice_height \
-                                                    "${OPTIONS[@]}" \
-                                                    2>&1 >/dev/tty)
-
-                                        dialog_retorno=$?  # ← Captura código de retorno
-
-                                        if [ $dialog_retorno -eq 1 ]; then
-                                            clear # ← Clear se cancelado
-                                            break
-                                        fi
-
-                                        clear
-                                    
-                                    
-                                        case $CHOICE in
-                                            # Habilitar o modo desenvolvedor
-                                            1) andistro --setup enable-dev-mode ;;
-
-                                            # Pareamento do ADB
-                                            2) andistro --setup adb-pair ;;
-
-                                            # Conectar ao ADB
-                                            3) andistro --setup adb-connect ;;
-
-                                            # Desativar o monitor de processos fantasmas
-                                            4) andistro --setup disable-ghost-process-monitor ;;
-                                        esac
-                                    done
-                                else
-                                    clear # ← Clear se cancelado
-                                    break
-                                    exit 0
-                                fi
-                            done
-                        ;;
-
-                        # Atualizar o AnDistro
-                        3)
-                            while true; do
-                                if [ "$andistro_version" = "alpha" ]; then
-                                    OPTIONS=(a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha]
-                                             b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]
-                                             m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
-                                            )
-                                elif [ "$andistro_version" = "beta" ]; then
-                                    OPTIONS=(b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]
-                                                m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
-                                                a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha]
-                                            )
-                                else
-                                    OPTIONS=(m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
-                                             a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha]
-                                             b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]    
-                                            )
-                                fi
-
-                                CHOICE=$(dialog --no-shadow --clear \
-                                                --title "$label_andistro_update" \
-                                                --ok-label "$label_update" \
-                                                --cancel-label "$label_back" \
-                                                --menu "$label_andistro_update_desc" \
-                                                20 $dialog_width $dialog_choice_height \
-                                                "${OPTIONS[@]}" \
-                                                2>&1 >/dev/tty)
-                                dialog_retorno=$?  # ← Captura código de retorno
-                                
-                                if [ $dialog_retorno -eq 1 ]; then
-                                    clear # ← Clear se cancelado
-                                    break
-                                    exit 0
-                                fi
-                                clear
-                            
-                                case $CHOICE in
-                                    # Atualizar o AnDistro [estável]
-                                    m) andistro -u main-dialog ;;
-
-                                    # Atualizar o AnDistro [alpha]
-                                    a) andistro -u alpha-dialog ;;
-
-                                    # Atualizar o AnDistro [beta]
-                                    b) andistro -u beta-dialog ;;
-                                esac
-                            done
+                            # Autoboot
+                            if grep -qF '[[ -z "$ANDISTRO_ASKED" && -x "$PREFIX/var/lib/andistro/manager/.config/autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"' "$PREFIX/etc/bash.bashrc" 2>/dev/null; then 
+                                # Se NÃO estiver ativo, DESATIVA o autoboot
+                                andistro --setup autoboot-disable
+                            else # Se estiver ativo, ATIVA o autoboot
+                                andistro --setup autoboot
+                            fi
                         ;;
 
                         # Verificar permissões
-                        4)
+                        2)
                             while true; do
                                 OPTIONS=(1 "$label_andistro_storage_permission_check" # Verificar permissão de armazenamento
                                          2 "$label_andistro_battery_optimization" # Remover otimização de bateria
@@ -327,10 +214,10 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                         ;;
 
                         # Instalar aplicativos adicionais
-                        5)
+                        3)
                             while true; do
                                 OPTIONS=(1 "$label_andistro_install_termux_api $label_required" # Instalar o Termux:API [obrigatório]
-                                         2 "$label_andistro_install_avnc $label_optional" # Instalar o AVNC [opcional]
+                                         2 "$label_andistro_install_vnc $label_optional" # Instalar o visualizador gráfico VNC [opcional]
                                         )
 
                                 CHOICE=$(dialog --no-shadow --clear \
@@ -354,7 +241,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                     # Instalar o Termux:API
                                     1) andistro --setup install-termux-api ;;
 
-                                    # Instalar o AVNC
+                                    # Instalar o VNC
                                     2) 
                                     andistro --setup install-vnc --interno
                                     ;;
@@ -363,152 +250,201 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                             done
                         ;;
 
-                        # Backups e importação
-                        6)
+                        # Atualizar o AnDistro
+                        4)
                             while true; do
-                                dialog --no-shadow --title "Backups e importação" \
+
+                                if [[ "$andistro_version" == *"alpha"* ]]; then
+                                    OPTIONS=(a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha]
+                                             b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]
+                                             m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
+                                            )
+                                elif [[ "$andistro_version" == *"beta"* ]]; then
+                                    OPTIONS=(b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]
+                                             m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
+                                             a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha]
+                                            )
+                                else
+                                    OPTIONS=(m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
+                                             b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]   
+                                             a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha] 
+                                            )
+                                fi
+
+                                CHOICE=$(dialog --no-shadow --clear \
+                                                --title "$label_andistro_update" \
+                                                --ok-label "$label_update" \
+                                                --cancel-label "$label_back" \
+                                                --menu "$label_andistro_update_desc" \
+                                                20 $dialog_width $dialog_choice_height \
+                                                "${OPTIONS[@]}" \
+                                                2>&1 >/dev/tty)
+                                dialog_retorno=$?  # ← Captura código de retorno
+                                
+                                if [ $dialog_retorno -eq 1 ]; then
+                                    clear # ← Clear se cancelado
+                                    break
+                                    exit 0
+                                fi
+                                clear
+                            
+                                case $CHOICE in
+                                    # Atualizar o AnDistro [estável]
+                                    m) andistro -u main-dialog ;;
+
+                                    # Atualizar o AnDistro [alpha]
+                                    a) andistro -u alpha-dialog ;;
+
+                                    # Atualizar o AnDistro [beta]
+                                    b) andistro -u beta-dialog ;;
+                                esac
+                            done
+                        ;;
+
+                        # Backups e importação
+                        5)
+                            while true; do
+                                # Alerta de Uso da ferramenta de backup e importação
+                                dialog --no-shadow --title "$label_andistro_backups_import" \
                                        --backtitle "$label_warning" \
                                        --yes-label "$label_confirm" \
                                        --no-label "$label_close" \
-                                       --yesno "Esta é uma ferramenta que permite fazer backup do Debian instalado pelo AnDistro e restaurar-lo ou importar o debian que foi instalado por fora do AnDistro. \nO processo de importação pode haver falhas devido a falta de clareza de como foi feito a instalação e configuração usando métodos externos." \
-                                       25 $dialog_width
+                                       --yesno "$label_andistro_backups_import_alert" \
+                                       $dialog_height $dialog_width
                                 
                                 dialog_retorno=$?
-                                
-                                if [ $dialog_retorno -eq 0 ]; then
+
+                                if [ $dialog_retorno -eq 0 ]; then # Se confirmar
                                     while true; do
-                                        if [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ]; then
-                                            OPTIONS=(2 "Importar ou restaurar" # 
-                                                    )
+                                        if [[ "$andistro_version" == *"alpha"* ]]; then
+                                            restore_update="alpha"
+                                        elif [[ "$andistro_version" == *"beta"* ]]; then
+                                            restore_update="beta"
+                                        elif [[ "$andistro_version" == *"main"* ]]; then
+                                            restore_update="main"
                                         else
-                                            OPTIONS=(2 "Importar ou restaurar" # 
-                                                    )
+                                            restore_update=""
                                         fi
-                                        
-                                        CHOICE=$(dialog --no-shadow --clear \
-                                                        --title "Backups e importação" \
-                                                        --cancel-label "$label_back" \
-                                                        --menu "$label_choose_one_of_the_option:" \
-                                                        $dialog_height $dialog_width $dialog_choice_height \
-                                                        "${OPTIONS[@]}" \
-                                                        2>&1 >/dev/tty)
-                                        
-                                        dialog_retorno=$?  # ← Captura código de retorno
-                                        if [ $dialog_retorno -eq 1 ]; then
-                                            clear # ← Clear se cancelado
-                                            break
-                                            break
+                                        if [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ]; then
+                                            # ✅ AnDistro existe → só backup
+                                            dialog --no-shadow --title "$label_andistro_backup" \
+                                                   --backtitle "$label_warning" \
+                                                   --yes-label "$label_confirm" \
+                                                   --no-label "$label_close" \
+                                                   --yesno "$label_andistro_backup_desc" \
+                                                   $dialog_height $dialog_width
+                                            dialog_retorno=$?
+
+                                            if [ $dialog_retorno -eq 0 ]; then # Se confirmar
+                                                chmod +x "$PREFIX/var/lib/andistro/manager/backup.sh"
+                                                bash "$PREFIX/var/lib/andistro/manager/backup.sh" # Roda o script de backup
+                                                clear
+                                                break 2
+                                                exit 0
+                                            else
+                                                clear
+                                                break 2
+                                                exit 0
+                                            fi
+                                        elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
+                                            # ✅ AnDistro NÃO existe, mas proot existe → import proot + compactado
+                                            OPTIONS=(1 "$label_andistro_import_proot_distro" #
+                                                     2 "$label_andistro_restore" #
+                                                    )
+                                            CHOICE=$(dialog --no-shadow --clear \
+                                                            --title "$label_andistro_backups_import" \
+                                                            --cancel-label "$label_back" \
+                                                            --menu "$label_choose_one_of_the_option:" \
+                                                            $dialog_height $dialog_width $dialog_choice_height \
+                                                            "${OPTIONS[@]}" \
+                                                            2>&1 >/dev/tty)
+                                                    
+                                            dialog_retorno=$?  # ← Captura código de retorno
+                                            if [ $dialog_retorno -eq 1 ]; then
+                                                clear # ← Clear se cancelado
+                                                break 2
+                                                exit 0
+                                            fi
+                                            clear
+
+                                            case $CHOICE in
+                                                1) andistro --setup import-proot-distro-debian --settings-menu ;;
+                                                2) 
+                                                    chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
+                                                    bash "$PREFIX/var/lib/andistro/manager/restore.sh"
+                                                    clear
+                                                    break 2
+                                                    exit 0
+                                                ;;
+                                            esac
+
+                                        else
+                                            # ✅ AnDistro NÃO existe, proot NÃO existe → só compactado
+                                            chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
+                                            bash "$PREFIX/var/lib/andistro/manager/restore.sh"
+                                            clear
+                                            break 2
                                             exit 0
                                         fi
+                                    done
+                                else # Se NÃO confirmar
+                                    clear # ← Clear se cancelado
+                                    break
+                                    exit 0
+                                fi
+                            done
+                        ;;
+
+                        # Configurações do ADB
+                        6)
+                            while true; do
+                                dialog --no-shadow --title "$label_andistro_adb_pair_title" \
+                                       --backtitle "$label_warning" \
+                                       --yes-label "$label_confirm" \
+                                       --no-label "$label_close" \
+                                       --yesno "$label_andistro_adb_configs_desc" \
+                                       $dialog_height $dialog_width
+                                
+                                dialog_retorno=$?
+
+                                if [ $dialog_retorno -eq 0 ]; then
+                                    while true; do
+                                        OPTIONS=(1 "$label_andistro_enable_dev_mode" # Habilitar o modo desenvolvedor
+                                                2 "$label_andistro_adb_pair" # Pareamento do ADB
+                                                3 "$label_andistro_adb_connect" # Conectar ao ADB
+                                                4 "$label_andistro_disable_ghost_process_monitor" # Desativar o monitor de processos fantasmas
+                                                )
+
+                                        CHOICE=$(dialog --no-shadow --clear \
+                                                    --title "$label_andistro_adb_configs" \
+                                                    --cancel-label "$label_back" \
+                                                    --menu "$label_choose_one_of_the_option:" \
+                                                    $dialog_height $dialog_width $dialog_choice_height \
+                                                    "${OPTIONS[@]}" \
+                                                    2>&1 >/dev/tty)
+
+                                        dialog_retorno=$?  # ← Captura código de retorno
+
+                                        if [ $dialog_retorno -eq 1 ]; then
+                                            clear # ← Clear se cancelado
+                                            break 2
+                                        fi
+
                                         clear
+                                    
+                                    
                                         case $CHOICE in
+                                            # Habilitar o modo desenvolvedor
+                                            1) andistro --setup enable-dev-mode ;;
 
-                                            # Importar
-                                            2)
-                                                while true; do
-                                                    if [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ]; then
-                                                        # ✅ AnDistro existe → só backup/restaurar
-                                                        OPTIONS=(1 "Indisponível" # 
-                                                                )
-                                                    elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
-                                                        # ✅ AnDistro NÃO existe, mas proot existe → import proot + compactado
-                                                        OPTIONS=(2 "Importar do proot-distro" #
-                                                                )
-                                                    else
-                                                        # ✅ AnDistro NÃO existe, proot NÃO existe → só compactado
-                                                        OPTIONS=(3 "indisponivel" #
-                                                                )
-                                                    fi
-                                                    
-                                                    CHOICE=$(dialog --no-shadow --clear \
-                                                                    --title "Backups e importação" \
-                                                                    --cancel-label "$label_back" \
-                                                                    --menu "$label_choose_one_of_the_option:" \
-                                                                    $dialog_height $dialog_width $dialog_choice_height \
-                                                                    "${OPTIONS[@]}" \
-                                                                    2>&1 >/dev/tty)
-                                                    
-                                                    dialog_retorno=$?  # ← Captura código de retorno
-                                                    if [ $dialog_retorno -eq 1 ]; then
-                                                        clear # ← Clear se cancelado
-                                                        break
-                                                        exit 0
-                                                    fi
-                                                    clear
-                                                    case $CHOICE in
+                                            # Pareamento do ADB
+                                            2) andistro --setup adb-pair ;;
 
-                                                        # Importar do proot-distro
-                                                        2)
-                                                            while true; do
-                                                                # Caminho usado para instalar o debian no proot-distro
-                                                                # /data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian
-                                                                # Caminho onde o AnDistro instala o Debian
-                                                                # /data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable
-                                                                # O Proot-distro não cria uma pasta para a versão, então a pasta debian do proot-distro é o equivalente ao stable do andistro.
-                                                                
-                                                                dialog --no-shadow --title "Backups e importação" \
-                                                                       --backtitle "$label_warning" \
-                                                                       --ok-label "$label_confirm" \
-                                                                       --msgbox "A importação irá configurar para que o Debian se adapte as configurações do AnDistro e isso fará com que: \n-Seja adicionado novos repositórios; \nSeja feita instalações de pacotes que podem não estar instaladas na sua versão do Debian. \n-Será feito uma atualização completa de todo o sistema. \n- A importação não irá apagar o Debian que você instalou. Por medida de segurança, o importador faz uma cópia do sistema." \
-                                                                       25 $dialog_width
-                                                                clear
+                                            # Conectar ao ADB
+                                            3) andistro --setup adb-connect ;;
 
-                                                                distro_name="debian"
-                                                                distro_version="stable"
-                                                                distro_based="debian"
-                                                                config_file="$andistro_files/manager/.config/$distro_based-based"
-                                                                bin="$andistro_files/manager/start-$distro_name"
-                                                                folder="$andistro_files/manager/$distro_name/$distro_version"
-                                                                mkdir -p "$PREFIX/var/lib/andistro/manager/$distro_name"
-                                                                mkdir -p "/sdcard/termux/andistro/manager/$distro_name/$distro_version"
-
-                                                                # Menu de Ambiente Gráfico
-                                                                OPTIONS=(1 "Já tenho uma interface definida"
-                                                                         2 "${label_environments_select_default} (XFCE4)" # Interface padrão
-                                                                         3 "${label_environments_select_light} (LXDE)" # Interface leve
-                                                                        )
-
-                                                                CHOICE=$(dialog --no-shadow --clear \
-                                                                                --title "$TITLE" \
-                                                                                --cancel-label "$label_back" \
-                                                                                --menu "$label_environments_select" \
-                                                                                $dialog_height $dialog_width $dialog_choice_height \
-                                                                                "${OPTIONS[@]}" \
-                                                                                2>&1 >/dev/tty)
-
-                                                                    dialog_retorno=$?  # ← Captura código de retorno
-                
-                                                                    if [ $dialog_retorno -eq 1 ]; then
-                                                                        clear # ← Clear se cancelado
-                                                                        break
-                                                                        exit 0
-                                                                    fi
-                                                                    clear
-                                                                    case $CHOICE in
-                                                                        # Interface padrão - Nenhuma
-                                                                        1)
-                                                                            config_environment="null"
-                                                                        ;;
-                                                                        # Interface padrão - XFCE4
-                                                                        2)
-                                                                            config_environment="xfce4"
-                                                                        ;;
-
-                                                                        # Interface leve - LXDE
-                                                                        3)	
-                                                                            config_environment="lxde"
-                                                                        ;;
-                                                                    esac
-
-                                                                    bash $PREFIX/var/lib/andistro/manager/import-$distro_name-proot-distro.sh "$config_file" "$andistro_files" "$distro_name" "$bin" "$folder" "$config_environment" "$distro_version"
-                                                                    clear
-                                                                    andistro
-                                                                    exit 0
-                                                            done
-                                                        ;;
-                                                    esac      
-                                                done
-                                            ;;
+                                            # Desativar o monitor de processos fantasmas
+                                            4) andistro --setup disable-ghost-process-monitor ;;
                                         esac
                                     done
                                 else
@@ -517,19 +453,30 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                     exit 0
                                 fi
                             done
-
                         ;;
 
-                        # Desisntalar o AnDistro
+                        # Se o Debian estiver instalado, desinstalar
+                        # Se o Debian NÃO estiver instalado, desinstalar o AnDistro 
                         7)
-                            andistro -d andistro
+                            if ls "$PREFIX/var/lib/andistro/manager/start-debian" 1>/dev/null 2>&1; then
+                                andistro -d
+                                andistro
+                            else
+                                andistro -d andistro
+                                andistro
+                            fi
                         ;;
+
+                        # Desinstalar o AnDistro
+                        8) andistro -d andistro ;;
                     esac
+
+
                 done
             ;;
 
-            h)
-
+            # Página de ajuda
+            3)
                 dialog --no-shadow --title "$label_help" \
                        --backtitle "$label_help" \
                        --yes-label "$label_proceed" \
@@ -549,6 +496,14 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     andistro
                     exit 0
                 fi
+            ;;
+
+            # Importar do proot-distros
+            4) andistro --setup import-proot-distro-debian --start-menu ;;
+
+            5)
+                am start -a android.intent.action.VIEW -d "https://forms.gle/R85frE8bbbF3mrdN9"
+            # 
             ;;
 
         esac
@@ -581,7 +536,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
             }
 
             update_dialog_view(){
-                show_progress_dialog steps-multi-label 52 \
+                show_progress_dialog steps-multi-label 54 \
                     "${label_progress}\n${label_andistro_update_version}" 'sleep 1' \
                     "${label_progress}\n${label_andistro_update_version}" 'sleep 2' \
                     "${label_progress}\n${label_andistro_update_version}" 'sleep 4' \
@@ -614,6 +569,8 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     "${label_install_script_download}" 'pkg install --no-install-recommends angle-android -y' \
                     "${label_install_script_download}" 'pkg install --no-install-recommends vulkan-loader-android -y' \
                     "${label_install_script_download}" 'pkg install --no-install-recommends jq -y' \
+                    "${label_install_script_download}" 'pkg install --no-install-recommends gnupg -y' \
+                    "${label_install_script_download}" 'pkg install --no-install-recommends coreutils -y' \
                     "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup"' \
                     "${label_install_script_download}" "git clone --depth 1 -b $branch_version https://github.com/andistro/app.git app-andistro_setup" \
                     "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/.git"' \
@@ -636,6 +593,29 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     "${label_update_apply}" 'sleep 10'
             }
             updatel_terminal_view(){
+                clear
+
+                RESET="\e[0m"
+                BG_WHITE="\e[47m"   # fundo branco
+                FG_BLACK="\e[30m"   # texto preto
+
+                echo
+                # an
+                echo -e "${BG_WHITE}${FG_BLACK}  a  ${RESET} ${BG_WHITE}${FG_BLACK}  n  ${RESET}"
+                echo
+
+                # dis
+                echo -e "${BG_WHITE}${FG_BLACK}  d  ${RESET} ${BG_WHITE}${FG_BLACK}  i  ${RESET} ${BG_WHITE}${FG_BLACK}  s  ${RESET}"
+                echo
+
+                # tro
+                echo -e "${BG_WHITE}${FG_BLACK}  t  ${RESET} ${BG_WHITE}${FG_BLACK}  r  ${RESET} ${BG_WHITE}${FG_BLACK}  o  ${RESET}"
+                echo
+
+                echo -e "\n$label_wait"
+                echo -e "\n$label_andistro_update_version"
+                echo
+
                 update_progress() {
                     current_step=$1
                     total_steps=$2
@@ -651,11 +631,9 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     printf "\r[%s%s] %3d%%" "$filled_bar" "$empty_bar" "$percent" > /dev/tty
                 }
 
-                total_steps=33  # Número total de etapas que você quer monitorar
+                total_steps=35  # Número total de etapas que você quer monitorar
                 current_step=0
 
-                echo -e "\n$label_wait"
-                echo -e "\n$label_andistro_update_version"
                 {
                     #1 Atualiza os repositórios
                     sleep 1
@@ -854,8 +832,10 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     rm -rf "$HOME/app-andistro_setup/.gitignore"
                     rm -rf "$HOME/app-andistro_setup/.gitattributes"
                     mv -f "$HOME/app-andistro_setup/andistro" "$PREFIX/bin/andistro"
-                    mv -f "$HOME/app-andistro_setup/termos.sh" "$HOME/termos.sh"
+                    rm -rf "$HOME/app-andistro_setup/termos.sh"
+                    rm -rf "$HOME/andistro_setup"
                     rsync -a "$HOME/app-andistro_setup/" "$PREFIX/var/lib/andistro/"
+                    rm -rf "$HOME/app-andistro_setup"
                     ((current_step++))
                     update_progress "$current_step" "$total_steps"; sleep 0.1
 
@@ -874,6 +854,20 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
                     #33 atualiza o start-debian
                     check_debian_installed > /dev/null 2>&1
+                    ((current_step++))
+                    update_progress "$current_step" "$total_steps"; sleep 0.1
+
+                    # 34 verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
+                    if ! dpkg -l | grep -qw gnupg; then
+                        pkg install --no-install-recommends gnupg -y > /dev/null 2>&1
+                    fi
+                    ((current_step++))
+                    update_progress "$current_step" "$total_steps"; sleep 0.1
+
+                    # 35 verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
+                    if ! dpkg -l | grep -qw coreutils; then
+                        pkg install --no-install-recommends coreutils -y > /dev/null 2>&1
+                    fi
                     ((current_step++))
                     update_progress "$current_step" "$total_steps"; sleep 0.1
 
@@ -928,8 +922,11 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
             
             chmod +x "$PREFIX/var/lib/andistro/lib/share/global"
             source "$PREFIX/var/lib/andistro/lib/share/global"
+
+            echo
             echo -e "$label_update_finish"
             echo -e "\n$label_andistro_start_command_info"
+            echo
         ;;
 
         # Comando para instalar uma distro
@@ -1062,7 +1059,6 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     # Usuário escolheu "Sim"
                     echo "$label_wait"
                     distro_name="debian"
-                    distro_name_upper="Debian"
                     label_uninstalling_system=$(printf "$label_uninstalling_system" "$distro_name_upper")
                 else
                     # Usuário escolheu "Não"
@@ -1326,16 +1322,6 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                         termux-open "/sdcard/termux/andistro/apps/$app_basename"
                     ;;
 
-                    # Baixar o avnc pelo F-Droid
-                    install-avnc)
-                        app_name="AVNC"
-                        app_packagename="com.gaurav.avnc"
-                        app_stable_link=$(get_stable_f_droid_download_link "$app_packagename")
-                        app_basename=$(basename $app_stable_link)
-                        show_progress_dialog steps-multi-label-alt 1 "${label_install_script_download}\n\n → ${app_name}" 'sleep 2 && wget -P "/sdcard/termux/andistro/apps" "$app_stable_link"'
-                        termux-open "/sdcard/termux/andistro/apps/$app_basename"
-                    ;;
-
                     # Baixar um dos aplicativos VNC pelo F-Droid
                     install-vnc)
                         local is_interno=false
@@ -1352,8 +1338,8 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                             esac
                         done
                         while true; do
-                            OPTIONS=(1 "Pela Play Store" # 
-                                     2 "Por aqui mesmo" # 
+                            OPTIONS=(1 "$label_andistro_install_apps_playtore" # 
+                                     2 "$label_andistro_install_apps_here" # 
                                     )
 
                             # Define label_close baseado no contexto
@@ -1368,7 +1354,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             --title "$label_andistro_install_apps" \
                                             --ok-label "$label_confirm" \
                                             --cancel-label "$current_label_close" \
-                                            --menu "Antes de prosseguir, escolha como instalar os aplicativos necessários:" \
+                                            --menu "$label_andistro_install_apps_desc" \
                                             20 $dialog_width $dialog_choice_height \
                                             "${OPTIONS[@]}" \
                                             2>&1 >/dev/tty)
@@ -1399,7 +1385,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                         --title "$label_andistro_install_apps" \
                                                         --ok-label "$label_install" \
                                                         --cancel-label "$label_back" \
-                                                        --menu "Escolha um dos aplicativos, clique em instalar. Depois retorne ao Termux" \
+                                                        --menu "$label_andistro_install_apps_choose" \
                                                         20 $dialog_width $dialog_choice_height \
                                                         "${OPTIONS[@]}" \
                                                         2>&1 >/dev/tty)
@@ -1452,7 +1438,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                         --title "$label_andistro_install_apps" \
                                                         --ok-label "$label_install" \
                                                         --cancel-label "$label_back" \
-                                                        --menu "Escolha um dos aplicativos, clique em instalar. Depois retorne ao Termux" \
+                                                        --menu "$label_andistro_install_apps_choose" \
                                                         20 $dialog_width $dialog_choice_height \
                                                         "${OPTIONS[@]}" \
                                                         2>&1 >/dev/tty)
@@ -1535,17 +1521,18 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                             #HOME_AUTOBOT="$HOME/.andistro_autoboot"
 
                             # Remove linha antiga (se existir)
-                            sed -i '/^\[ -x "$HOME\/.andistro_autoboot" \] && /d' "$BASHRC_FILE"
+                            sed -i "/^\[\[ -z \\\"\$ANDISTRO_ASKED\\\" && -x \\\"\$PREFIX\\/var\\/lib\\/andistro\\/manager\\/\\.config\\/autoboot\\\" \]\\] && export ANDISTRO_ASKED=1 && exec \\\"\$PREFIX\\/var\\/lib\\/andistro\\/manager\\/\\.config\\/autoboot\\\"$/d" "$BASHRC_FILE"
+
 
                             # Backup
                             cp "$BASHRC_FILE" "$BASHRC_FILE.bak.$(date +%Y%m%d_%H%M%S)"
 
                             # Copia autoboot para HOME
                             #cp "$SOURCE_AUTOBOOT" "$HOME_AUTOBOT"
-                            chmod +x "$HOME_AUTOBOT"
+                            chmod +x "$SOURCE_AUTOBOOT"
 
                             # INSERE SÓ 1 LINHA!
-                            echo '[[ -z "$ANDISTRO_ASKED" && -x "$HOME/.andistro_autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"' >> "$BASHRC_FILE"
+                            echo '[[ -z "$ANDISTRO_ASKED" && -x "$PREFIX/var/lib/andistro/manager/.config/autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"' >> "$BASHRC_FILE"
 
                             chmod 644 "$BASHRC_FILE"
                             andistro alerta setup-apply
@@ -1568,12 +1555,12 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
                         if [ $dialog_retorno -eq 0 ]; then
                             BASHRC_FILE="$PREFIX/etc/bash.bashrc"
-                            HOME_AUTOBOT="$HOME/.andistro_autoboot"
+                            #HOME_AUTOBOT="$HOME/.andistro_autoboot"
 
-                            cp "$BASHRC_FILE" "$BASHRC_FILE.bak.$(date +%Y%m%d_%H%M%S)"
+                            #cp "$BASHRC_FILE" "$BASHRC_FILE.bak.$(date +%Y%m%d_%H%M%S)"
 
                             # Remove LINHA EXATA (com escaping)
-                            sed -i '/\[\[ *\$ANDISTRO_ASKED[^]]*\]\] *&& *export *ANDISTRO_ASKED=1 *&& *exec *"[^"]*\autoboot"/d' "$BASHRC_FILE"
+                            sed -i "/^\[\[ -z \\\"\$ANDISTRO_ASKED\\\" && -x \\\"\$PREFIX\\/var\\/lib\\/andistro\\/manager\\/\\.config\\/autoboot\\\" \]\\] && export ANDISTRO_ASKED=1 && exec \\\"\$PREFIX\\/var\\/lib\\/andistro\\/manager\\/\\.config\\/autoboot\\\"$/d" "$BASHRC_FILE"
                             
                             # OU mais simples: grep -v (remove linha exata)
                             grep -v 'ANDISTRO_ASKED.*andistro_autoboot' "$BASHRC_FILE" > "$BASHRC_FILE.tmp" && mv "$BASHRC_FILE.tmp" "$BASHRC_FILE"
@@ -1619,7 +1606,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                    --yes-label "$label_open" \
                                    --no-label "$label_close" \
                                    --yesno "$label_andistro_adb_pair_desc" \
-                                   25 $dialog_width
+                                   $dialog_height $dialog_width
                             dialog_retorno=$?
 
                             if [ $dialog_retorno -eq 0 ]; then
@@ -1834,6 +1821,112 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                         exit 0
                     ;;
 
+                    import-proot-distro-debian)
+                        local is_interno=false
+                        # Verifica se foi passado --interno
+                        while [ $# -gt 0 ]; do
+                            case "$1" in
+                                --interno)
+                                    is_interno=true
+                                    shift
+                                ;;
+                                --settings-menu)
+                                    is_interno=true
+                                    settings_menu=true
+                                    shift
+                                ;;
+
+                                --start-menu)
+                                    is_interno=true
+                                    start_menu=true
+                                    shift
+                                ;;
+                                  
+                                *)
+                                    shift
+                                    ;;
+                            esac
+                        done
+                        while true; do
+                            # Define label_close baseado no contexto
+                            local current_label_close="$label_close"
+                            if [ "$is_interno" = true ]; then
+                                current_label_close="$label_back"
+                            else
+                                current_label_close="$label_close"
+                            fi
+
+                            dialog --no-shadow --title "$label_andistro_backups_import" \
+                                   --backtitle "$label_warning" \
+                                   --ok-label "$label_confirm" \
+                                   --msgbox "$label_andistro_import_proot_distro" \
+                                   30 $dialog_width
+                            clear
+
+                            if ls "$folder/root/.vnc/xstartup" 1>/dev/null 2>&1; then # Se o xstartup existir
+                                echo ""
+                            else # Se o xstartup NÃO existir
+                                # Menu de Ambiente Gráfico
+                                OPTIONS=(1 "${label_environments_select_default} (XFCE4)" # Interface padrão
+                                         2 "${label_environments_select_light} (LXDE)" # Interface leve
+                                        )
+                                CHOICE=$(dialog --no-shadow --clear \
+                                                --title "$TITLE" \
+                                                --cancel-label "$current_label_close" \
+                                                --menu "$label_environments_select" \
+                                                $dialog_height $dialog_width $dialog_choice_height \
+                                                "${OPTIONS[@]}" \
+                                                2>&1 >/dev/tty)
+
+                                dialog_retorno=$?  # ← Captura código de retorno
+
+                                if [ $dialog_retorno -eq 1 ]; then
+                                    clear # ← Clear se cancelado
+                                    if [ "$settings_menu" = true ]; then
+                                        break
+                                    fi
+
+                                    if [ "$start_menu" = true ]; then
+                                        andistro
+                                        exit 0
+                                    fi
+
+                                    if [ "$is_interno" = false ]; then
+                                        cat /data/data/com.termux/files/usr/etc/motd
+                                        echo -e "\n$label_andistro_start_command_info"
+                                    fi
+                                    break
+                                    exit 0
+                                fi
+                                clear
+
+                                case $CHOICE in
+                                    # Interface padrão - XFCE4
+                                    1)
+                                        config_environment="xfce4"
+                                    ;;
+
+                                    # Interface leve - LXDE
+                                    2)	
+                                        config_environment="lxde"
+                                    ;;
+                                esac
+
+                            fi
+                            distro_name="debian"
+                            distro_version="stable"
+                            distro_based="debian"
+                            config_file="$andistro_files/manager/.config/$distro_based-based"
+                            bin="$andistro_files/manager/start-$distro_name"
+                            folder="$andistro_files/manager/$distro_name/$distro_version"
+                            mkdir -p "$PREFIX/var/lib/andistro/manager/$distro_name"
+                            mkdir -p "/sdcard/termux/andistro/manager/$distro_name/$distro_version"
+                            bash $PREFIX/var/lib/andistro/manager/import-$distro_name-proot-distro.sh "$config_file" "$andistro_files" "$distro_name" "$bin" "$folder" "$config_environment" "$distro_version"
+                            clear
+                            andistro
+                        done
+                    ;;
+
                     *)
                         echo "$label_command_not_found: $2"
                         ;;
@@ -1958,17 +2051,20 @@ elif [ -r /etc/os-release ] && grep -Eq '^ID=(debian|ubuntu)' /etc/os-release; t
 #>>># Menu principal do Andistro
     if [ -z "$1" ]; then
         # Verifica se o vncserver está rodando
-        if pgrep -x "Xtigervnc" > /dev/null; then
+        if ls "/bin/vncserver" 1>/dev/null 2>&1; then
             OPTIONS=(s "$label_andistro_start_vnc" # Iniciar o VNC 
-                     k "$label_andistro_finish_vnc" #Finalizar o VNC 
+                     p "$label_andistro_change_vnc_password" # Trocar a senha do VNC
+                     h "$label_help" # Ajuda
+                     e "$label_andistro_debian_exit" #Encerrar o Debian"
+                    )
+        elif pgrep -x "Xtigervnc" > /dev/null; then
+            OPTIONS=(k "$label_andistro_finish_vnc" #Finalizar o VNC 
                      p "$label_andistro_change_vnc_password" # Trocar a senha do VNC
                      h "$label_help" # Ajuda
                      e "$label_andistro_debian_exit" #Encerrar o Debian"
                     )
         else
-            OPTIONS=(s "$label_andistro_start_vnc" # Iniciar o VNC 
-                     p "$label_andistro_change_vnc_password" # Trocar a senha do VNC
-                     h "$label_help" # Ajuda
+            OPTIONS=(h "$label_help" # Ajuda
                      e "$label_andistro_debian_exit" #Encerrar o Debian"
                     )
         fi
@@ -2027,7 +2123,11 @@ elif [ -r /etc/os-release ] && grep -Eq '^ID=(debian|ubuntu)' /etc/os-release; t
             ;;
 
             # Finaliza o Debian e retorna ao Termux
-            e) exit && exit;;
+            e) 
+                andistro --boot vnc --kill
+                jobs -p | while read pid; do kill $pid 2>/dev/null; done
+                exit 0
+            ;;
         esac
     fi
 
