@@ -117,10 +117,10 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                 while true; do
 
                     # Autoboot
-                    if grep -qF "[[ -z "$ANDISTRO_ASKED" && -x "$PREFIX/var/lib/andistro/manager/.config/autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"" "$PREFIX/etc/bash.bashrc" 2>/dev/null; then # Se NÃO estiver ativo, ATIVA o autoboot
-                        label_autoboot_andistro="$label_enable_autoboot_andistro"
+                    if grep -qF '[[ -z "$ANDISTRO_ASKED" && -x "$PREFIX/var/lib/andistro/manager/.config/autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"' "$PREFIX/etc/bash.bashrc" 2>/dev/null; then # Se NÃO estiver ativo, ATIVA o autoboot
+                        label_autoboot_andistro="$label_enable_autoboot_andistro" # Habilitar o autoboot
                     else # Se estiver ativo, DESATIVA o autoboot
-                        label_autoboot_andistro="$label_disable_autoboot_andistro"
+                        label_autoboot_andistro="$label_disable_autoboot_andistro" # Desabilitar o autoboot
                     fi
                     
                     if ls "$PREFIX/var/lib/andistro/manager/start-debian" 1>/dev/null 2>&1; then
@@ -167,7 +167,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                         1)
                             
                             # Autoboot
-                            if grep -qF "[[ -z "$ANDISTRO_ASKED" && -x "$PREFIX/var/lib/andistro/manager/.config/autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"" "$PREFIX/etc/bash.bashrc" 2>/dev/null; then 
+                            if grep -qF '[[ -z "$ANDISTRO_ASKED" && -x "$PREFIX/var/lib/andistro/manager/.config/autoboot" ]] && export ANDISTRO_ASKED=1 && exec "$PREFIX/var/lib/andistro/manager/.config/autoboot"' "$PREFIX/etc/bash.bashrc" 2>/dev/null; then 
                                 # Se NÃO estiver ativo, ATIVA o autoboot
                                 andistro --setup autoboot
                             else # Se estiver ativo, DESATIVA o autoboot
@@ -594,7 +594,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
             }
             updatel_terminal_view(){
                 clear
-                
+
                 RESET="\e[0m"
                 BG_WHITE="\e[47m"   # fundo branco
                 FG_BLACK="\e[30m"   # texto preto
