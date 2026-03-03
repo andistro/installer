@@ -242,15 +242,16 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                         # Atualizar o AnDistro
                         4)
                             while true; do
-                                if [ "$andistro_version" = "alpha" ]; then
+
+                                if [[ "$andistro_version" == *"alpha"* ]]; then
                                     OPTIONS=(a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha]
                                              b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]
                                              m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
                                             )
-                                elif [ "$andistro_version" = "beta" ]; then
+                                elif [[ "$andistro_version" == *"beta"* ]]; then
                                     OPTIONS=(b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]
-                                                m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
-                                                a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha]
+                                             m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
+                                             a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha]
                                             )
                                 else
                                     OPTIONS=(m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
