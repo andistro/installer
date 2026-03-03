@@ -243,7 +243,7 @@ current_step=0
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
     #29 Todo o pacote de instalação
-    git clone --depth 1 -b alpha https://github.com/andistro/app.git app-andistro_setup  > /dev/null 2>&1
+    git clone --depth 1 -b beta https://github.com/andistro/app.git app-andistro_setup  > /dev/null 2>&1
     ((current_step++))
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
