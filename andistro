@@ -439,7 +439,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                     done
                                 else
                                     clear # ← Clear se cancelado
-                                    break 2
+                                    break
                                     exit 0
                                 fi
                             done
