@@ -75,12 +75,13 @@ label_andistro_install_termux_api="Install Termux:API"
 label_andistro_help_desc="If you click <Proceed>, the AnDistro documentation page will be opened, with text instructions for use and resolution of common problems reported by the community."
 label_andistro_debian_exit="Exit Debian"
 
-label_andistro_backups_import="Backups and import"
 label_andistro_backups_import_desc="Make a backup of your data or import an old backup to AnDistro.\n\nChoose the desired option to start the backup or import process."
 label_andistro_backups_import_alert="This is a tool that allows you to backup the Debian installed by AnDistro and restore it or import the Debian that was installed outside of AnDistro. \nThe import process may have failures due to lack of clarity on how the installation and configuration was done using external methods."
 label_andistro_backups_import_backup_system="Backup the system"
 label_andistro_backups_import_restore_system="Import or restore"
 label_andistro_import_proot_distro="The import will configure the Debian from proot-distro to adapt to AnDistro's settings and this will cause: \n-New repositories to be added; \nInstallation of packages that may not be installed in your version of Debian. \n-A complete update of the entire system will be made. \n- The import will not delete the Debian you installed. For security reasons, the importer makes a copy of the system."
+label_andistro_bakup="Backup of Debian"
+label_andistro_restore_import="Restore or Import Debian"
 
 ## AndDistro distros exclusive
 distro_desc_line_d1=" --boot command to start some configuration."
@@ -235,6 +236,11 @@ label_update="Update"
 label_check="Check"
 label_finish="Finish"
 label_restart="Restart"
+label_backup="Backup"
+label_restore="Restore"
+label_import="Import"
+label_export="Export"
+
 
 # Messages in brackets
 label_detected="[Detected]"

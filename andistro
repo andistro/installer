@@ -112,9 +112,9 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     else # Se estiver ativo, DESATIVA o autoboot
                         label_autoboot_andistro="$label_disable_autoboot_andistro"
                     fi
-
-
+                    
                     if ls "$PREFIX/var/lib/andistro/manager/start-debian" 1>/dev/null 2>&1; then
+                        label_andistro_backups_import="$label_andistro_bakup"
                         OPTIONS=(1 "$label_autoboot_andistro" # Inicialização / autoboot
                                  2 "$label_andistro_check_permissions" # Verificar permissões
                                  3 "$label_andistro_install_apps" # Instalar aplicativos adicionais
@@ -125,6 +125,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                  8 "$label_andistro_uninstall" # Desinstalar o AnDistro
                                 )
                     else
+                        label_andistro_backups_import="$label_andistro_restore_import"
                         OPTIONS=(1 "$label_autoboot_andistro" # Inicialização / autoboot
                                  2 "$label_andistro_check_permissions" # Verificar permissões
                                  3 "$label_andistro_install_apps" # Instalar aplicativos adicionais
