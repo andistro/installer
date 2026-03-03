@@ -316,12 +316,25 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                         fi
                                         if [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ]; then
                                             # ✅ AnDistro existe → só backup
-                                            chmod +x "$PREFIX/var/lib/andistro/manager/backup.sh"
-                                            bash "$PREFIX/var/lib/andistro/manager/backup.sh" # Roda o script de backup/importação
-                                            clear
-                                            break 2
-                                            exit 0
+                                            dialog --no-shadow --title "$label_andistro_backups_import" \
+                                                   --backtitle "$label_warning" \
+                                                   --yes-label "$label_confirm" \
+                                                   --no-label "$label_close" \
+                                                   --yesno "Tem certeza que deseja fazer backup do Debian?\nCaso confirme, a próxima será para definir a senha. Não existe a opção de voltar, somente de fazer o backup." \
+                                                   25 $dialog_width
+                                            dialog_retorno=$?
 
+                                            if [ $dialog_retorno -eq 0 ]; then # Se confirmar
+                                                chmod +x "$PREFIX/var/lib/andistro/manager/backup.sh"
+                                                bash "$PREFIX/var/lib/andistro/manager/backup.sh" # Roda o script de backup/importação
+                                                clear
+                                                break 2
+                                                exit 0
+                                            else
+                                                clear
+                                                break 2
+                                                exit 0
+                                            fi
                                         elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
                                             # ✅ AnDistro NÃO existe, mas proot existe → import proot + compactado
                                             OPTIONS=(1 "Importar do proot-distro" #
