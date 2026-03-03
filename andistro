@@ -593,6 +593,25 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     "${label_update_apply}" 'sleep 10'
             }
             updatel_terminal_view(){
+                RESET="\e[0m"
+                BG_WHITE="\e[47m"   # fundo branco
+                FG_BLACK="\e[30m"   # texto preto
+                
+                echo
+                # an
+                echo -e "${BG_WHITE}${FG_BLACK}  a  ${RESET} ${BG_WHITE}${FG_BLACK}  n  ${RESET}"
+                echo
+
+                # dis
+                echo -e "${BG_WHITE}${FG_BLACK}  d  ${RESET} ${BG_WHITE}${FG_BLACK}  i  ${RESET} ${BG_WHITE}${FG_BLACK}  s  ${RESET}"
+                echo
+
+                # tro
+                echo -e "${BG_WHITE}${FG_BLACK}  t  ${RESET} ${BG_WHITE}${FG_BLACK}  r  ${RESET} ${BG_WHITE}${FG_BLACK}  o  ${RESET}"
+                echo
+
+                echo -e "\n$label_wait"
+                echo -e "\n$label_andistro_update_version"
                 update_progress() {
                     current_step=$1
                     total_steps=$2
@@ -611,8 +630,6 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                 total_steps=35  # Número total de etapas que você quer monitorar
                 current_step=0
 
-                echo -e "\n$label_wait"
-                echo -e "\n$label_andistro_update_version"
                 {
                     #1 Atualiza os repositórios
                     sleep 1
