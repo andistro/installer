@@ -53,6 +53,13 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                      2 "$label_settings" # Configurações
                      3 "$label_help" # Ajuda
                     )
+        elif elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
+            # Se o Debian NÃO estiver instalado, mas o proot-distro estiver → opção de importar do proot-distro
+            OPTIONS=(1 "$label_andistro_install_system" # => Instalar o sistema
+                     4 "$label_andistro_import_proot_distro" # => Importar do proot-distro
+                     2 "$label_settings" # Configurações
+                     3 "$label_help" # Ajuda
+                    )
         else # Se o Debian NÃO estiver instalado
             OPTIONS=(1 "$label_andistro_install_system" # => Instalar o sistema
                      2 "$label_settings" # Configurações
@@ -358,7 +365,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             clear
 
                                             case $CHOICE in
-                                                1) andistro --setup import-proot ;;
+                                                1) andistro --setup import-proot-distro-debian ;;
                                                 2) 
                                                     chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
                                                     bash "$PREFIX/var/lib/andistro/manager/restore.sh"
