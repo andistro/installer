@@ -403,7 +403,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
                                         if [ $dialog_retorno -eq 1 ]; then
                                             clear # ← Clear se cancelado
-                                            break
+                                            break 2
                                         fi
 
                                         clear
@@ -425,7 +425,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                     done
                                 else
                                     clear # ← Clear se cancelado
-                                    break
+                                    break 2
                                     exit 0
                                 fi
                             done
