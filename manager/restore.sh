@@ -159,9 +159,10 @@ fi
 # 1/2 – preparar
 echo "[1/2] Preparando restauração" >> "$LOG_FILE"
 # 1/2 – preparar + descriptografar
-show_progress_dialog steps-multi-label 2 \
+show_progress_dialog steps-multi-label 3 \
     "${label_andistro_preparing_backup}" "echo 'Preparando' >> \"$LOG_FILE\"; sleep 0.5" \
-    "${label_andistro_decrypting_backup}" "echo 'Descriptografando' >> \"$LOG_FILE\"; echo \"$SENHA\" | gpg --batch --yes --passphrase-fd 0 --decrypt \"$SELECTED_FILE\" > \"$TMPDIR_DEFAULT/restore.tar.gz\" 2>>\"$LOG_FILE\""
+    "${label_andistro_decrypting_backup}" "echo 'Descriptografando' >> \"$LOG_FILE\"; echo \"$SENHA\" | gpg --batch --yes --passphrase-fd 0 --decrypt \"$SELECTED_FILE\" > \"$TMPDIR_DEFAULT/restore.tar.gz\" 2>>\"$LOG_FILE\"" \
+    "${label_andistro_decrypting_backup}" "sleep 2"
 
 # 2/2 – extrair sem barra de progresso
 echo "[2/2] Extraindo backup para $DEBIAN_DIR" >> "$LOG_FILE"
