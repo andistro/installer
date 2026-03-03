@@ -593,6 +593,8 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     "${label_update_apply}" 'sleep 10'
             }
             updatel_terminal_view(){
+                clear
+                
                 RESET="\e[0m"
                 BG_WHITE="\e[47m"   # fundo branco
                 FG_BLACK="\e[30m"   # texto preto
@@ -918,7 +920,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
             
             chmod +x "$PREFIX/var/lib/andistro/lib/share/global"
             source "$PREFIX/var/lib/andistro/lib/share/global"
-            
+
             echo
             echo -e "$label_update_finish"
             echo -e "\n$label_andistro_start_command_info"
