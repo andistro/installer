@@ -596,7 +596,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                 RESET="\e[0m"
                 BG_WHITE="\e[47m"   # fundo branco
                 FG_BLACK="\e[30m"   # texto preto
-                
+
                 echo
                 # an
                 echo -e "${BG_WHITE}${FG_BLACK}  a  ${RESET} ${BG_WHITE}${FG_BLACK}  n  ${RESET}"
@@ -612,6 +612,8 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
                 echo -e "\n$label_wait"
                 echo -e "\n$label_andistro_update_version"
+                echo
+                
                 update_progress() {
                     current_step=$1
                     total_steps=$2
