@@ -319,8 +319,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             chmod +x "$PREFIX/var/lib/andistro/manager/backup.sh"
                                             bash "$PREFIX/var/lib/andistro/manager/backup.sh" # Roda o script de backup/importação
                                             clear
-                                            break
-                                            break
+                                            break 2
                                             exit 0
 
                                         elif ! [ -f "/data/data/com.termux/files/usr/var/lib/andistro/manager/start-debian" ] && ! [ -d "/data/data/com.termux/files/usr/var/lib/andistro/manager/debian/stable" ] && [ -d "/data/data/com.termux/files/usr/var/lib/proot-distro/installed-rootfs/debian" ]; then
@@ -339,7 +338,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             dialog_retorno=$?  # ← Captura código de retorno
                                             if [ $dialog_retorno -eq 1 ]; then
                                                 clear # ← Clear se cancelado
-                                                break
+                                                break 2
                                                 exit 0
                                             fi
                                             clear
@@ -350,8 +349,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                                     chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
                                                     bash "$PREFIX/var/lib/andistro/manager/restore.sh"
                                                     clear
-                                                    break
-                                                    break
+                                                    break 2
                                                     exit 0
                                                 ;;
                                             esac
@@ -361,8 +359,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
                                             bash "$PREFIX/var/lib/andistro/manager/restore.sh"
                                             clear
-                                            break
-                                            break
+                                            break 2
                                             exit 0
                                         fi
                                     done
