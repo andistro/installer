@@ -254,8 +254,8 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             )
                                 else
                                     OPTIONS=(m "$label_andistro_update_main" # Atualizar o AnDistro [estável]
-                                             a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha]
-                                             b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]    
+                                             b "$label_andistro_update_beta" # Atualizar o AnDistro [beta]   
+                                             a "$label_andistro_update_alpha" # Atualizar o AnDistro [alpha] 
                                             )
                                 fi
 
