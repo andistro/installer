@@ -365,7 +365,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             clear
 
                                             case $CHOICE in
-                                                1) andistro --setup import-proot-distro-debian ;;
+                                                1) andistro --setup import-proot-distro-debian --interno ;;
                                                 2) 
                                                     chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
                                                     bash "$PREFIX/var/lib/andistro/manager/restore.sh"
@@ -494,6 +494,9 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     exit 0
                 fi
             ;;
+
+            # Importar do proot-distros
+            4) andistro --setup import-proot-distro-debian --interno ;;
 
         esac
         exit 0
