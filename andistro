@@ -365,7 +365,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                             clear
 
                                             case $CHOICE in
-                                                1) andistro --setup import-proot-distro-debian --interno ;;
+                                                1) andistro --setup import-proot-distro-debian --settings-menu ;;
                                                 2) 
                                                     chmod +x "$PREFIX/var/lib/andistro/manager/restore.sh"
                                                     bash "$PREFIX/var/lib/andistro/manager/restore.sh"
@@ -496,7 +496,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
             ;;
 
             # Importar do proot-distros
-            4) andistro --setup import-proot-distro-debian --interno ;;
+            4) andistro --setup import-proot-distro-debian --start-menu ;;
 
         esac
         exit 0
@@ -1795,7 +1795,19 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                                 --interno)
                                     is_interno=true
                                     shift
-                                    ;;
+                                ;;
+                                --settings-menu)
+                                    is_interno=true
+                                    settings_menu=true
+                                    shift
+                                ;;
+
+                                --start-menu)
+                                    is_interno=true
+                                    start_menu=true
+                                    shift
+                                ;;
+                                  
                                 *)
                                     shift
                                     ;;
@@ -1836,6 +1848,15 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
 
                                 if [ $dialog_retorno -eq 1 ]; then
                                     clear # ← Clear se cancelado
+                                    if [ "$settings_menu" = true ]; then
+                                        break
+                                    fi
+
+                                    if [ "$start_menu" = true ]; then
+                                        andistro
+                                        exit 0
+                                    fi
+
                                     if [ "$is_interno" = false ]; then
                                         cat /data/data/com.termux/files/usr/etc/motd
                                         echo -e "\n$label_andistro_start_command_info"
