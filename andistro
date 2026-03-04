@@ -423,7 +423,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     "${label_install_script_download}" 'pkg install --no-install-recommends vulkan-loader-android -y' \
                     "${label_install_script_download}" 'pkg install --no-install-recommends jq -y' \
                     "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup"' \
-                    "${label_install_script_download}" "git clone --depth 1 -b $branch_version https://github.com/andistro/app.git app-andistro_setup" \
+                    "${label_install_script_download}" "git clone --depth 1 -b $branch_version https://github.com/andistro/installer.git installer-andistro_setup" \
                     "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/.git"' \
                     "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/andistro_setup"' \
                     "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/README.md"' \
@@ -649,7 +649,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     update_progress "$current_step" "$total_steps"; sleep 0.1
 
                     #29 Todo o pacote de instalação
-                    git clone --depth 1 -b $branch_version https://github.com/andistro/app.git app-andistro_setup  > /dev/null 2>&1
+                    git clone --depth 1 -b $branch_version https://github.com/andistro/installer.git installer-andistro_setup  > /dev/null 2>&1
                     ((current_step++))
                     update_progress "$current_step" "$total_steps"; sleep 0.1
 
