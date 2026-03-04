@@ -248,15 +248,15 @@ current_step=0
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
     #30 Extrai o pacote de instalação
-    rm -rf "$HOME/app-andistro_setup/.git"
-    rm -rf "$HOME/app-andistro_setup/andistro_setup"
-    rm -rf "$HOME/app-andistro_setup/README.md"
-    rm -rf "$HOME/app-andistro_setup/.editconfig"
-    rm -rf "$HOME/app-andistro_setup/.gitignore"
-    rm -rf "$HOME/app-andistro_setup/.gitattributes"
-    mv -f "$HOME/app-andistro_setup/andistro" "$PREFIX/bin/andistro"
-    mv -f "$HOME/app-andistro_setup/termos.sh" "$HOME/termos.sh"
-    rsync -a "$HOME/app-andistro_setup/" "$PREFIX/var/lib/andistro/"
+    rm -rf "$HOME/installer-andistro_setup/.git"
+    rm -rf "$HOME/installer-andistro_setup/andistro_setup"
+    rm -rf "$HOME/installer-andistro_setup/README.md"
+    rm -rf "$HOME/installer-andistro_setup/.editconfig"
+    rm -rf "$HOME/installer-andistro_setup/.gitignore"
+    rm -rf "$HOME/installer-andistro_setup/.gitattributes"
+    mv -f "$HOME/installer-andistro_setup/andistro" "$PREFIX/bin/andistro"
+    mv -f "$HOME/installer-andistro_setup/termos.sh" "$HOME/termos.sh"
+    rsync -a "$HOME/installer-andistro_setup/" "$PREFIX/var/lib/andistro/"
     ((current_step++))
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
@@ -274,7 +274,7 @@ current_step=0
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
     #33 Limpa os arquivos de instalação e exibe os termos de uso
-    rm -rf "$HOME/app-andistro_setup"
+    rm -rf "$HOME/installer-andistro_setup"
     rm -rf "$HOME/andistro_setup" 
     chmod +x "$HOME/termos.sh"
     bash "$HOME/termos.sh"
