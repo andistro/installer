@@ -571,17 +571,17 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     "${label_install_script_download}" 'pkg install --no-install-recommends jq -y' \
                     "${label_install_script_download}" 'pkg install --no-install-recommends gnupg -y' \
                     "${label_install_script_download}" 'pkg install --no-install-recommends coreutils -y' \
-                    "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup"' \
+                    "${label_install_script_download}" 'rm -rf "$HOME/installer-andistro_setup"' \
                     "${label_install_script_download}" "git clone --depth 1 -b $branch_version https://github.com/andistro/installer.git installer-andistro_setup" \
-                    "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/.git"' \
-                    "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/andistro_setup"' \
-                    "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/README.md"' \
-                    "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/.editconfig"' \
-                    "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/.gitignore"' \
-                    "${label_install_script_download}" 'rm -rf "$HOME/app-andistro_setup/.gitattributes"' \
-                    "${label_install_script_download}" 'mv -f "$HOME/app-andistro_setup/andistro" "$PREFIX/bin/andistro"' \
-                    "${label_install_script_download}" 'mv -f "$HOME/app-andistro_setup/termos.sh" "$HOME/termos.sh"' \
-                    "${label_install_script_download}" 'rsync -a "$HOME/app-andistro_setup/" "$PREFIX/var/lib/andistro/"' \
+                    "${label_install_script_download}" 'rm -rf "$HOME/installer-andistro_setup/.git"' \
+                    "${label_install_script_download}" 'rm -rf "$HOME/installer-andistro_setup/andistro_setup"' \
+                    "${label_install_script_download}" 'rm -rf "$HOME/installer-andistro_setup/README.md"' \
+                    "${label_install_script_download}" 'rm -rf "$HOME/installer-andistro_setup/.editconfig"' \
+                    "${label_install_script_download}" 'rm -rf "$HOME/installer-andistro_setup/.gitignore"' \
+                    "${label_install_script_download}" 'rm -rf "$HOME/installer-andistro_setup/.gitattributes"' \
+                    "${label_install_script_download}" 'mv -f "$HOME/installer-andistro_setup/andistro" "$PREFIX/bin/andistro"' \
+                    "${label_install_script_download}" 'mv -f "$HOME/installer-andistro_setup/termos.sh" "$HOME/termos.sh"' \
+                    "${label_install_script_download}" 'rsync -a "$HOME/installer-andistro_setup/" "$PREFIX/var/lib/andistro/"' \
                     "${label_install_script_download}" 'chmod +x "$PREFIX/bin/andistro"' \
                     "${label_install_script_download}" 'chmod +x "$PREFIX/var/lib/andistro/lib/share/global"' \
                     "${label_install_script_download}" 'rm -rf "$HOME/storage"' \
@@ -825,17 +825,17 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
                     update_progress "$current_step" "$total_steps"; sleep 0.1
 
                     #30 Extrai o pacote de instalação
-                    rm -rf "$HOME/app-andistro_setup/.git"
-                    rm -rf "$HOME/app-andistro_setup/andistro_setup"
-                    rm -rf "$HOME/app-andistro_setup/README.md"
-                    rm -rf "$HOME/app-andistro_setup/.editconfig"
-                    rm -rf "$HOME/app-andistro_setup/.gitignore"
-                    rm -rf "$HOME/app-andistro_setup/.gitattributes"
-                    mv -f "$HOME/app-andistro_setup/andistro" "$PREFIX/bin/andistro"
-                    rm -rf "$HOME/app-andistro_setup/termos.sh"
+                    rm -rf "$HOME/installer-andistro_setup/.git"
+                    rm -rf "$HOME/installer-andistro_setup/andistro_setup"
+                    rm -rf "$HOME/installer-andistro_setup/README.md"
+                    rm -rf "$HOME/installer-andistro_setup/.editconfig"
+                    rm -rf "$HOME/installer-andistro_setup/.gitignore"
+                    rm -rf "$HOME/installer-andistro_setup/.gitattributes"
+                    mv -f "$HOME/installer-andistro_setup/andistro" "$PREFIX/bin/andistro"
+                    rm -rf "$HOME/installer-andistro_setup/termos.sh"
                     rm -rf "$HOME/andistro_setup"
-                    rsync -a "$HOME/app-andistro_setup/" "$PREFIX/var/lib/andistro/"
-                    rm -rf "$HOME/app-andistro_setup"
+                    rsync -a "$HOME/installer-andistro_setup/" "$PREFIX/var/lib/andistro/"
+                    rm -rf "$HOME/installer-andistro_setup"
                     ((current_step++))
                     update_progress "$current_step" "$total_steps"; sleep 0.1
 
@@ -915,7 +915,7 @@ if [ -n "$TERMUX_VERSION" ] || [ -n "$ANDROID_ROOT" ]; then  # Android
             fi
 
             # Limpeza pós atualização
-            rm -rf "$HOME/app-andistro_setup"
+            rm -rf "$HOME/installer-andistro_setup"
             rm -rf "$HOME/termos.sh"
             rm -rf andistro_setup.zip
             rm -rf "$HOME/andistro_setup"
