@@ -13,11 +13,23 @@ cleanup() {
     rm -rf andistro-bridge
     rm -rf andistro-output
     rm -f "$HOME/andistro-bridge"
-    pkill -f "pulseaudio" 2>/dev/null
+    
+    # Encerra a ponte de comandos do termux no debian
     [ -n "$LISTENER_PID" ] && kill "$LISTENER_PID" 2>/dev/null
-    [ -n "$PA_PID" ] && kill "$PA_PID" 2>/dev/null
+
+    # Encerra a conexão com a GPU
     [ -n "$VIRGL_PID" ] && kill "$VIRGL_PID" 2>/dev/null
+
+    # Encerra o Pulseaudio
+    pulseaudio --kill 2>/dev/null
+    pkill -f "pulseaudio" 2>/dev/null
+    [ -n "$PA_PID" ] && kill "$PA_PID" 2>/dev/null
+    sleep 0.5
+    pkill -9 -f "pulseaudio" 2>/dev/null
+    [ -n "$PA_PID" ] && kill -9 "$PA_PID" 2>/dev/null
+    rm -f $PREFIX/var/run/pulse/native $TMPDIR/pulse/native ~/.config/pulse/*
     clear
+    # Exibe uma mensagem quando o Debian é encerrado
     cat /data/data/com.termux/files/usr/etc/motd # exibe a mensagem padrão do Termux
     source "$PREFIX/var/lib/andistro/lib/share/global"
     echo -e "\n$label_andistro_start_command_info"
@@ -38,7 +50,12 @@ pacmd load-module module-aaudio-sink
 virgl_test_server_android > /dev/null 2>&1 &
 VIRGL_PID=$!
 
-auto_cmd="andistro --boot vnc --dialog-display"
+
+if grep -q 'VARIANT="AnDistro"' $PREFIX/var/lib/andistro/manager/debian/stable/etc/os-release 2>/dev/null; then
+    auto_cmd="andistro; exec bash --login"
+else
+    auto_cmd="exec bash --login"
+fi
 
 ## unset LD_PRELOAD in case termux-exec is installed
 unset LD_PRELOAD
@@ -46,7 +63,7 @@ command="proot"
 command+=" --kill-on-exit"
 command+=" --link2symlink"
 command+=" -0"
-command+=" -r $folder"
+command+=" -r $PREFIX/var/lib/andistro/manager/debian/stable"
 command+=" -b /dev"
 command+=" -b /dev/null:/proc/sys/kernel/cap_last_cap"
 command+=" -b /proc"
@@ -54,38 +71,38 @@ command+=" -b $TMPDIR:/tmp"
 command+=" -b /proc/meminfo:/proc/meminfo"
 command+=" -b /sys"
 command+=" -b /data"
-command+=" -b $folder/root:/dev/shm"
-## Exclusivo Ubuntu
+command+=" -b $PREFIX/var/lib/andistro/manager/debian/stable/root:/dev/shm"
+## 
 command+=" -b /proc/self/fd/2:/dev/stderr"
 command+=" -b /proc/self/fd/1:/dev/stdout"
 command+=" -b /proc/self/fd/0:/dev/stdin"
 command+=" -b /dev/urandom:/dev/random"
 command+=" -b /proc/self/fd:/dev/fd"
-command+=" -b $config_file/proc/fakethings/stat:/proc/stat"
-command+=" -b $config_file/proc/fakethings/vmstat:/proc/vmstat"
+command+=" -b $PREFIX/var/lib/andistro/manager/.config/debian-based/proc/fakethings/stat:/proc/stat"
+command+=" -b $PREFIX/var/lib/andistro/manager/.config/debian-based/proc/fakethings/vmstat:/proc/vmstat"
 #command+=" -b $config_file/proc/fakethings/version:/proc/version"
 ## uncomment the following line to have access to the home directory of termux
-command+=" -b /data/data/com.termux/files/home:/termux/home"
-command+=" -b $andistro_files/lib/share:/usr/local/lib/andistro"
-command+=" -b $andistro_files/manager:/usr/local/lib/andistro/manager"
+command+=" -b $HOME:/termux/home"
+command+=" -b $PREFIX/var/lib/andistro/lib/share:/usr/local/lib/andistro"
+command+=" -b $PREFIX/var/lib/andistro/manager:/usr/local/lib/andistro/manager"
 command+=" -b $PREFIX/bin/andistro:/usr/local/bin/andistro"
 command+=" -b /sdcard"
 command+=" -w /root"
 command+=" /usr/bin/env -i"
 command+=" MOZ_FAKE_NO_SANDBOX=1"
-command+=" MOZ_DISABLE_CONTENT_SANDBOX=1"
+#command+=" MOZ_DISABLE_CONTENT_SANDBOX=1"
 command+=" HOME=/root"
 command+=" DISPLAY=:1"
 command+=" PULSE_SERVER=127.0.0.1"
 command+=" PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games"
 command+=" TERM=$TERM"
 #command+=" LANG=C.UTF-8"
-command+=" LANG=$system_lang_code_env.UTF-8"
+command+=" LANG=$system_icu_lang_code_env.UTF-8"
 #command+=" /bin/bash --login"
 command+=" /bin/bash"
 com="$@"
 if [ -z "$1" ];then
-    $command -lc "$auto_cmd; exec bash --login"
+    $command -lc "$auto_cmd"
 else
     $command -lc "$com"
 fi

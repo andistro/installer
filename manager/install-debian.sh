@@ -42,45 +42,64 @@ if [ "$first" != 1 ];then
 	} | dialog --no-shadow --gauge "$label_distro_download_finish" $dialog_height $dialog_width
 fi
 
+echo 'VARIANT="AnDistro"
+VARIANT_ID="andistro"' >> $folder/etc/os-release
+
+rm -rf $folder/etc/apt/sources.list
+
+echo "deb http://deb.debian.org/debian $distro_version main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian $distro_version-updates main contrib non-free
+deb http://security.debian.org/debian-security $distro_version-security main contrib non-free" >> $folder/etc/apt/sources.list
+
+chmod 644 $folder/etc/apt/sources.list
+chown root:root $folder/etc/apt/sources.list
+
 # Configurações pós-instalação
-# copia o arquivo de configuração de idioma da pasta $PREFIX/var/lib/andistro/manager/.configs/debian-based/locale_setup/ ppara o root
 cp "$config_file/start-distro" $bin
-sed -i "s|command+=\" -r \$folder\"|command+=\" -r $folder\"|g" $bin
-sed -i "s|command+=\" -b \$folder/root:/dev/shm\"|command+=\" -b $folder/root:/dev/shm\"|g" $bin
-sed -i "s|command+=\" -b \$config_file/proc/fakethings/stat:/proc/stat\"|command+=\" -b $config_file/proc/fakethings/stat:/proc/stat\"|g" $bin
-sed -i "s|command+=\" -b \$config_file/proc/fakethings/vmstat:/proc/vmstat\"|command+=\" -b $config_file/proc/fakethings/vmstat:/proc/vmstat\"|g" $bin
-sed -i "s|command+=\" -b \$andistro_files/lib/share:/usr/local/lib/andistro\"|command+=\" -b $andistro_files/lib/share:/usr/local/lib/andistro\"|g" $bin
-sed -i "s|command+=\" -b \$andistro_files/manager:/usr/local/lib/andistro/manager\"|command+=\" -b $andistro_files/manager:/usr/local/lib/andistro/manager\"|g" $bin
-sed -i "s|command+=\" -b \$andistro_files/manager/.config/debian-based/bin:/usr/local/bin/\"|command+=\" -b $andistro_files/manager/.config/debian-based/bin:/usr/local/bin/\"|g" $bin
-sed -i "s|command+=\" -b \$PREFIX/bin/andistro:/usr/local/lib/andistro/bin/andistro\"|command+=\" -b $PREFIX/bin/andistro:/usr/local/lib/andistro/bin/andistro\"|g" $bin
-sed -i "s|command+=\" LANG=\$system_lang_code_env.UTF-8\"|command+=\" LANG=$system_lang_code_env.UTF-8\"|g" $bin
+
+sed -i "s|command+=\" LANG=\$system_icu_lang_code_env.UTF-8\"|command+=\" LANG=$system_icu_lang_code_env.UTF-8\"|g" $bin
 
 chmod +x $bin
 
 rm -rf $folder/root/.bash_profile
 cp "$config_file/.bash_profile" $folder/root/.bash_profile
 
-sed -i "s|distro_name=\"\$1\"|distro_name=\"$distro_name\"|g" $folder/root/.bash_profile
-sed -i "s|distro_theme=\"\$2\"|distro_theme=\"$distro_theme\"|g" $folder/root/.bash_profile
-sed -i "s|LANG=\"\$3\"|LANG=\"$system_icu_lang_code_env.UTF-8\"|g" $folder/root/.bash_profile
+sed -i "s|distro_name=\"\"|distro_name=\"$distro_name\"|g" $folder/root/.bash_profile
+sed -i "s|distro_theme=\"\"|distro_theme=\"$distro_theme\"|g" $folder/root/.bash_profile
+sed -i "s|LANG=\"\"|LANG=\"$system_icu_lang_code_env.UTF-8\"|g" $folder/root/.bash_profile
 	
 cp $config_file/system-config.sh $folder/root/system-config.sh
 
 if [ "$config_environment" = "null" ]; then
 	echo " "
 elif [ "$config_environment" = "xfce4" ]; then
-    # Coloque aqui o comando que você quer executar quando for XFCE4
 	cp "$config_file/environment/$config_environment/config-environment.sh" "$folder/root/config-environment.sh"
 	cp "$config_file/environment/$config_environment/xfce4-panel.tar.bz2" "$folder/root/xfce4-panel.tar.bz2"
 else
 	cp "$config_file/environment/$config_environment/config-environment.sh" "$folder/root/config-environment.sh"
 fi
 
+cat << 'EOF' >> $folder/etc/hosts
+# IPv4.
+127.0.0.1   localhost.localdomain localhost
+# IPv6.
+::1         localhost.localdomain localhost ip6-localhost ip6-loopback
+fe00::0     ip6-localnet
+ff00::0     ip6-mcastprefix
+ff02::1     ip6-allnodes
+ff02::2     ip6-allrouters
+ff02::3     ip6-allhosts
+EOF
 
-# Adicionar entradas em hosts, resolv.conf e timezone
-echo "127.0.0.1 localhost localhost" | tee $folder/etc/hosts > /dev/null 2>&1
-echo "nameserver 8.8.8.8" | tee $folder/etc/resolv.conf > /dev/null 2>&1
+echo "nameserver 8.8.8.8
+nameserver 8.8.4.4" | tee $folder/etc/resolv.conf > /dev/null 2>&1
 echo "$system_timezone" | tee $folder/etc/timezone > /dev/null 2>&1
+
+if grep -q "^LANG=" $folder/etc/environment 2>/dev/null; then
+    sed -i "s/^LANG=.*$/LANG=$system_icu_lang_code_env.UTF-8/" $folder/etc/environment
+else
+    echo "LANG=$system_icu_lang_code_env.UTF-8" | tee -a $folder/etc/environment > /dev/null 2>&1
+fi
 
 # KERNEL_VERSON=$(uname -r)
 
@@ -96,4 +115,18 @@ touch $folder/root/.hushlogin
 # Cria o arquivo bash_profile para as configurações serem iniciadas junto com o sistema
 
 # Inicia o sistema
+
+sed -i "s/^# *\($system_icu_lang_code_env.UTF-8\)/\1/" $folder/etc/locale.gen
+
+echo -e "LANG=$system_icu_lang_code_env.UTF-8" > $folder/etc/locale.conf
+
+echo "export LANG=$system_icu_lang_code_env.UTF-8" >> $folder/root/.bashrc 
+
+echo "export LANGUAGE=$system_icu_lang_code_env.UTF-8" >> $folder/root/.bashrc
+
+echo "export LANGUAGE=$system_icu_lang_code_env.UTF-8" >> $folder/root/.bashrc
+
+bash $bin "locale-gen $system_icu_lang_code_env.UTF-8"
+
+
 bash $bin

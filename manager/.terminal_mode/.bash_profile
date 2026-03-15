@@ -4,7 +4,7 @@ distro_name="$1"
 distro_theme="$2"
 system_lang_code="$3"
 system_lang_code_env="${system_lang_code//-/_}"
-export LANG=$system_lang_code_env.UTF-8
+LANG=""
 system_lang_code_env_lower=$(echo "$LANG" | sed 's/\..*//' | sed 's/_/-/' | tr '[:upper:]' '[:lower:]')
 # Fonte modular configuração global
 source "/usr/local/lib/andistro/global"
@@ -15,41 +15,77 @@ echo -e "\n${distro_wait}\n"
 #======================================================================================================
 # global == update_progress() {}
 
-sed -i "s/^# *\($system_lang_code_env.UTF-8\)/\1/" /etc/locale.gen
+sed -i "s/^# *\($system_icu_lang_code_env.UTF-8\)/\1/" /etc/locale.gen
 
-sudo locale-gen $system_lang_code_env.UTF-8
+sudo locale-gen $system_icu_lang_code_env.UTF-8
 
-echo -e "LANG=$system_lang_code_env.UTF-8" > /etc/locale.conf
+echo -e "LANG=$system_icu_lang_code_env.UTF-8" > /etc/locale.conf
 
-echo "export LANG=$system_lang_code_env.UTF-8" >> $HOME/.bashrc 
+echo "export LANG=$system_icu_lang_code_env.UTF-8" >> $HOME/.bashrc 
 
-echo "export LANGUAGE=$system_lang_code_env.UTF-8" >> $HOME/.bashrc
+echo "export LANGUAGE=$system_icu_lang_code_env.UTF-8" >> $HOME/.bashrc
 
-echo "export LANGUAGE=$system_lang_code_env.UTF-8" >> $HOME/.bashrc
+echo "export LANGUAGE=$system_icu_lang_code_env.UTF-8" >> $HOME/.bashrc
+
+sudo apt install language-pack-gnome-$default_locale_lang_global -y
+
+sudo apt install language-pack-$default_locale_lang_global -y
+
+sudo mv /var/lib/dpkg/info /var/lib/dpkg/info_old
+
+sudo mkdir /var/lib/dpkg/info
 
 apt update
 
-sudo install -d -m 0755 /etc/apt/keyrings
+cat <<EOF | sudo tee /etc/apt/sources.list.d/mozilla.sources
+Types: deb
+URIs: https://packages.mozilla.org/apt
+Suites: mozilla
+Components: main
+Signed-By: /etc/apt/keyrings/packages.mozilla.org.asc
+EOF
 
-wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc
-
-echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee -a /etc/apt/sources.list.d/mozilla.list
-
-echo -e "Package: *
+echo '
+Package: *
 Pin: origin packages.mozilla.org
-Pin-Priority: 1000" | sudo tee /etc/apt/preferences.d/mozilla 
+Pin-Priority: 1000
+' | sudo tee /etc/apt/preferences.d/mozilla
 
-wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg 
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
 
-sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg 
+sudo install -D -o root -g root -m 644 microsoft.gpg /usr/share/keyrings/microsoft.gpg &&
 
-echo 'deb [arch=arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main' | sudo tee /etc/apt/sources.list.d/vscode.list 
+rm -f microsoft.gpg
 
-rm -f packages.microsoft.gpg 
+cat <<EOF | sudo tee /etc/apt/sources.list.d/vscode.sources
+Types: deb
+URIs: https://packages.microsoft.com/repos/code
+Suites: stable
+Components: main
+Signed-By: /usr/share/keyrings/microsoft.gpg
+EOF
 
-sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg 
+sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
 
-echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main"|sudo tee /etc/apt/sources.list.d/brave-browser-release.list 
+sudo curl -fsSLo /etc/apt/sources.list.d/brave-browser-release.sources https://brave-browser-apt-release.s3.brave.com/brave-browser.sources
+
+sudo curl -fsSLo /usr/share/keyrings/brave-browser-beta-archive-keyring.gpg https://brave-browser-apt-beta.s3.brave.com/brave-browser-beta-archive-keyring.gpg
+
+sudo curl -fsSLo /etc/apt/sources.list.d/brave-browser-beta.sources https://brave-browser-apt-beta.s3.brave.com/brave-browser.sources
+
+sudo curl -fsSLo /usr/share/keyrings/brave-browser-nightly-archive-keyring.gpg https://brave-browser-apt-nightly.s3.brave.com/brave-browser-nightly-archive-keyring.gpg
+
+sudo curl -fsSLo /etc/apt/sources.list.d/brave-browser-nightly.sources https://brave-browser-apt-nightly.s3.brave.com/brave-browser.sources
+
+wget -O /usr/share/keyrings/vivaldi-archive-keyring.gpg https://repo.vivaldi.com/archive/linux_signing_key.pub
+
+cat <<EOF | sudo tee /etc/apt/sources.list.d/vivaldi.sources
+Types: deb
+URIs: https://repo.vivaldi.com/archive/deb/
+Suites: stable
+Components: main
+Signed-By: /usr/share/keyrings/vivaldi-archive-keyring.gpg
+EOF
 
 apt update 
 
@@ -58,6 +94,18 @@ apt update
 #======================================================================================================
 sudo dpkg --configure -a 
 sudo apt --fix-broken install -y 
+
+sudo mv /var/lib/dpkg/info/* /var/lib/dpkg/info_old/
+
+sudo rm -rf /var/lib/dpkg/info
+
+sudo mv /var/lib/dpkg/info_old /var/lib/dpkg/info
+
+sudo apt update
+
+sudo apt clean
+
+sudo apt autoclean
 
 etc_timezone=$(cat /etc/timezone)
 
@@ -79,11 +127,14 @@ sudo DEBIAN_FRONTEND=noninteractive apt install tzdata --no-install-recommends -
 
 sudo apt install --no-install-recommends -y \
     apt-utils \
+    apt-transport-https \
     debconf-utils \
     dbus-x11 \
     keyboard-configuration \
     python3 \
     python3-psutil \
+    python3-pip \
+    python3-venv \
     at-spi2-core \
     bleachbit \
     exo-utils \
@@ -92,22 +143,29 @@ sudo apt install --no-install-recommends -y \
     font-manager \
     git \
     inetutils-tools \
-    inxi \
     lsb-release \
     make \
     net-tools \
     pavucontrol \
-    synaptic \
+    pulseaudio-utils \
+    alsa-utils \
     tigervnc-common \
     tigervnc-standalone-server \
     tigervnc-tools \
     gvfs-backends \
     tumbler \
     ffmpegthumbnailer \
+    ffmpeg \
+    mpv \
     unzip \
     xdg-user-dirs \
     xz-utils \
-    zip
+    zip \
+    mesa-utils \
+    mesa-utils-extra \
+    mesa-vulkan-drivers \
+    libgl1-mesa-dri \
+    libglx-mesa0
 
 
 echo -e "\033[1;96m$label_system_setup\033[0m"
@@ -121,7 +179,6 @@ mkdir -p "/root/.vnc"
 echo -e "file:///sdcard sdcard" | tee /root/.config/gtk-3.0/bookmarks
 echo "alias ls='ls --color=auto'" >> $HOME/.bashrc
 echo "source \"/usr/local/lib/andistro/global\"" >> $HOME/.bashrc
-sudo sed -i 's/^Exec=synaptic-pkexec/Exec=synaptic/' /usr/share/applications/synaptic.desktop
 
 echo -e "\033[1;96m$label_themes\033[0m"
 echo " "
@@ -177,4 +234,9 @@ rm -rf $HOME/start-environment.sh
 rm -rf $HOME/wallpapers.sh
 rm -rf $HOME/.bash_profile
 rm -rf $HOME/.dialogrc
+
+sudo apt clean > /dev/null 2>&1
+
+sudo apt autoclean > /dev/null 2>&1
+
 exit

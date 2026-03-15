@@ -51,10 +51,10 @@ else
     system_icu_locale_code=$(echo $LANG | sed 's/\..*//' | sed 's/_/-/')   # Captura o valor de LANG. Ex.; pt_BR.UTF-8
 fi
 
-system_icu_lang_code_env="${system_icu_locale_code//-/_}"
+system_icu_lang_code_env="${system_icu_locale_code//-/_}" # Converte o locale ICU para o formato de variável de ambiente (substitui - por _). Ex.: pt_BR
 system_lang_code_env_lower=$(echo "$LANG" | sed 's/\..*//' | sed 's/_/-/' | tr '[:upper:]' '[:lower:]') # torna op valor de LANG em minusculo e troca o _ por -. Ex.: pt-br
 default_locale_lang_global=$(echo "$LANG" | sed 's/_.*//' | tr '[:upper:]' '[:lower:]') # pega somente a sigla do idioma, sem região. Ex.: pt
-system_architecture=$(dpkg --print-architecture)
+system_architecture=$(dpkg --print-architecture) # Detecta a arquitetura do sistema usando dpkg (funciona na maioria dos sistemas baseados em Debian, incluindo Termux)
 
 export wlan_ip_localhost=$(ifconfig 2>/dev/null | grep 'inet ' | grep broadcast | awk '{print $2}') # IP da rede 
 

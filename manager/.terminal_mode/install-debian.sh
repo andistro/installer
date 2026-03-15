@@ -51,7 +51,7 @@ sed -i "s|command+=\" -b \$andistro_files/lib/share:/usr/local/lib/andistro\"|co
 sed -i "s|command+=\" -b \$andistro_files/manager:/usr/local/lib/andistro/manager\"|command+=\" -b $andistro_files/manager:/usr/local/lib/andistro/manager\"|g" $bin
 sed -i "s|command+=\" -b \$andistro_files/manager/.config/debian-based/bin:/usr/local/bin/\"|command+=\" -b $andistro_files/manager/.config/debian-based/bin:/usr/local/bin/\"|g" $bin
 sed -i "s|command+=\" -b \$PREFIX/bin/andistro:/usr/local/lib/andistro/bin/andistro\"|command+=\" -b $PREFIX/bin/andistro:/usr/local/lib/andistro/bin/andistro\"|g" $bin
-sed -i "s|command+=\" LANG=\$system_lang_code_env.UTF-8\"|command+=\" LANG=$system_lang_code_env.UTF-8\"|g" $bin
+sed -i "s|command+=\" LANG=\$system_icu_lang_code_env.UTF-8\"|command+=\" LANG=$system_icu_lang_code_env.UTF-8\"|g" $bin
 
 chmod +x $bin
 

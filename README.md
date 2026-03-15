@@ -30,7 +30,7 @@
 <br>
 
 ```bash 
-andistro/app (branch: alpha)
+andistro/app (branch: beta)
 │
 ├── manager/
 │   ├── .config/
@@ -75,6 +75,3 @@ andistro/app (branch: alpha)
 ├── andistro_setup
 └── termos.sh
 ```
-
-
-
