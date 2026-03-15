@@ -15,6 +15,14 @@ extra-keys = [['ESC','/','-','HOME','UP','END','PGUP'], \
     
 EOF
 fi
+
+# Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
+sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
+
+# Recarrega as configurações do Termux para aplicar as mudanças
+termux-reload-settings
+termux-reload-settings </dev/tty 
+
 sleep 2
 clear
 # Mensagens coloridas antes da barra de progresso
@@ -299,12 +307,7 @@ bash "$HOME/termos.sh"
 chmod +x "$PREFIX/var/lib/andistro/lib/share/global"
 source "$PREFIX/var/lib/andistro/lib/share/global"
 
-# Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
-sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
 
-# Recarrega as configurações do Termux para aplicar as mudanças
-termux-reload-settings
-termux-reload-settings </dev/tty 
 
 
 # Solicita permissão de acesso ao armazenamento (necessário para o funcionamento do Andistro)
