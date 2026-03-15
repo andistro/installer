@@ -30,7 +30,7 @@
 <br>
 
 ```bash 
-andistro/app (branch: beta)
+andistro/app
 │
 ├── manager/
 │   ├── .config/
