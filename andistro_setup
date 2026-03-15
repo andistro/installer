@@ -1,7 +1,20 @@
 #!/bin/bash
 # GITHUB Version
 #curl -L "https://raw.githubusercontent.com/andistro/app/refs/heads/alpha/andistro_setup" | bash
+#Configura as teclas extras do Termux
+if ! grep -q "^# Andistro Extra keys$" ~/.termux/termux.properties 2>/dev/null; then
+  cat << 'EOF' >> ~/.termux/termux.properties
 
+
+#############################################################################
+# Andistro Extra keys
+#############################################################################
+extra-keys = [['ESC','/','-','HOME','UP','END','PGUP'], \
+              ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN'], \
+              ['DRAWER','DEL','BKSP','PASTE','','KEYBOARD','ENTER']]
+    
+EOF
+fi
 sleep 2
 clear
 # Mensagens coloridas antes da barra de progresso
@@ -285,21 +298,6 @@ bash "$HOME/termos.sh"
 # Torna executável o script global e chama ele para carregar as variáveis de ambiente globais do Andistro
 chmod +x "$PREFIX/var/lib/andistro/lib/share/global"
 source "$PREFIX/var/lib/andistro/lib/share/global"
-
-#Configura as teclas extras do Termux
-if ! grep -q "^# Andistro Extra keys$" ~/.termux/termux.properties 2>/dev/null; then
-  cat << 'EOF' >> ~/.termux/termux.properties
-
-
-#############################################################################
-# Andistro Extra keys
-#############################################################################
-extra-keys = [['ESC','/','-','HOME','UP','END','PGUP'], \
-              ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN'], \
-              ['DRAWER','DEL','BKSP','PASTE','','KEYBOARD','ENTER']]
-    
-EOF
-fi
 
 # Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
 sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
