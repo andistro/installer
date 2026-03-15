@@ -272,21 +272,20 @@ current_step=0
     fi
     ((current_step++))
     update_progress "$current_step" "$total_steps"; sleep 0.1
+}
 
-    #33 Remove os arquivos temporários de instalação
-    rm -rf "$HOME/installer-andistro_setup"
-    rm -rf "$HOME/andistro_setup"
+#Remove os arquivos temporários de instalação
+rm -rf "$HOME/installer-andistro_setup"
+rm -rf "$HOME/andistro_setup"
 
-    chmod +x "$HOME/termos.sh"
-    bash "$HOME/termos.sh"
+chmod +x "$HOME/termos.sh"
+bash "$HOME/termos.sh"
 
-    #34 Torna executável o script global e chama ele para carregar as variáveis de ambiente globais do Andistro
-    chmod +x "$PREFIX/var/lib/andistro/lib/share/global"
-    source "$PREFIX/var/lib/andistro/lib/share/global"
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
+# Torna executável o script global e chama ele para carregar as variáveis de ambiente globais do Andistro
+chmod +x "$PREFIX/var/lib/andistro/lib/share/global"
+source "$PREFIX/var/lib/andistro/lib/share/global"
 
-    # 35 Configura as teclas extras do Termux
+#Configura as teclas extras do Termux
 if ! grep -q "^# Andistro Extra keys$" ~/.termux/termux.properties 2>/dev/null; then
   cat << 'EOF' >> ~/.termux/termux.properties
 
@@ -300,36 +299,28 @@ extra-keys = [['ESC','/','-','HOME','UP','END','PGUP'], \
     
 EOF
 fi
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 36 Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
+    # Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
     sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 37 Recarrega as configurações do Termux para aplicar as mudanças
+    # Recarrega as configurações do Termux para aplicar as mudanças
     termux-reload-settings
     termux-reload-settings </dev/tty 
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 38 Solicita permissão de acesso ao armazenamento (necessário para o funcionamento do Andistro)
+
+    # Solicita permissão de acesso ao armazenamento (necessário para o funcionamento do Andistro)
     andistro --setup storage-permission
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 39 Solicita a otmização da bateria (necessário para o funcionamento do Andistro)
+
+    # Solicita a otmização da bateria (necessário para o funcionamento do Andistro)
     andistro --setup battery
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 40 Solicita a permissão de instalação de aplicativos externos (necessário para o funcionamento do Andistro)
+
+    # Solicita a permissão de instalação de aplicativos externos (necessário para o funcionamento do Andistro)
     andistro --setup install-apps
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 41 Solicita a instalação do Termux:API (necessário para o funcionamento do Andistro)
+
+    # Solicita a instalação do Termux:API (necessário para o funcionamento do Andistro)
     dialog --no-shadow --title "$label_install Termux:API" \
        --backtitle "$label_warning" \
        --yes-label "$label_install" \
@@ -346,10 +337,8 @@ fi
     else
         clear
     fi
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 42 Dar as opções de aplicativos VNC para o usuário escolher qual instalar (necessário para o funcionamento do Andistro)
+    # Dar as opções de aplicativos VNC para o usuário escolher qual instalar (necessário para o funcionamento do Andistro)
     dialog --no-shadow --title "$label_install VNC" \
            --backtitle "$label_warning" \
            --yes-label "$label_install" \
@@ -365,31 +354,22 @@ fi
     else
         clear
     fi
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 43 Questiona o atalho de inicialização rápida do Andistro
+    # Questiona o atalho de inicialização rápida do Andistro
     andistro --setup autoboot
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 44 verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
+
+    # verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
     if ! dpkg -l | grep -qw gnupg; then
         pkg install --no-install-recommends gnupg -y > /dev/null 2>&1
     fi
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    # 45 verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
+
+    # verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
     if ! dpkg -l | grep -qw coreutils; then
         pkg install --no-install-recommends coreutils -y > /dev/null 2>&1
     fi
-    ((current_step++))
-    update_progress "$current_step" "$total_steps"; sleep 0.1
-
-    echo
-}
 
 clear
 
-andistro 
+andistro </dev/tty 
