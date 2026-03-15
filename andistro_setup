@@ -50,7 +50,7 @@ update_progress() {
     printf "\r[%s%s] %3d%%" "$filled_bar" "$empty_bar" "$percent"
 }
 
-total_steps=45  # Número total de etapas que você quer monitorar
+total_steps=32  # Número total de etapas que você quer monitorar
 current_step=0
 
 {
@@ -300,75 +300,75 @@ extra-keys = [['ESC','/','-','HOME','UP','END','PGUP'], \
 EOF
 fi
 
-    # Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
-    sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
+# Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
+sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
 
-    # Recarrega as configurações do Termux para aplicar as mudanças
-    termux-reload-settings
-    termux-reload-settings </dev/tty 
-
-
-    # Solicita permissão de acesso ao armazenamento (necessário para o funcionamento do Andistro)
-    andistro --setup storage-permission
+# Recarrega as configurações do Termux para aplicar as mudanças
+termux-reload-settings
+termux-reload-settings </dev/tty 
 
 
-    # Solicita a otmização da bateria (necessário para o funcionamento do Andistro)
-    andistro --setup battery
+# Solicita permissão de acesso ao armazenamento (necessário para o funcionamento do Andistro)
+andistro --setup storage-permission
 
 
-    # Solicita a permissão de instalação de aplicativos externos (necessário para o funcionamento do Andistro)
-    andistro --setup install-apps
+# Solicita a otmização da bateria (necessário para o funcionamento do Andistro)
+andistro --setup battery
 
 
-    # Solicita a instalação do Termux:API (necessário para o funcionamento do Andistro)
-    dialog --no-shadow --title "$label_install Termux:API" \
-       --backtitle "$label_warning" \
-       --yes-label "$label_install" \
-       --no-label "$label_ignore" \
-       --yesno "$label_termux_api_desc" \
-       20 $dialog_width
+# Solicita a permissão de instalação de aplicativos externos (necessário para o funcionamento do Andistro)
+andistro --setup install-apps
 
-    dialog_retorno=$?
 
+# Solicita a instalação do Termux:API (necessário para o funcionamento do Andistro)
+dialog --no-shadow --title "$label_install Termux:API" \
+    --backtitle "$label_warning" \
+    --yes-label "$label_install" \
+    --no-label "$label_ignore" \
+    --yesno "$label_termux_api_desc" \
+    20 $dialog_width
+
+dialog_retorno=$?
+
+clear
+
+if [ $dialog_retorno -eq 0 ]; then
+    andistro --setup install-termux-api
+else
     clear
+fi
 
-    if [ $dialog_retorno -eq 0 ]; then
-        andistro --setup install-termux-api
-    else
-        clear
-    fi
+# Dar as opções de aplicativos VNC para o usuário escolher qual instalar (necessário para o funcionamento do Andistro)
+dialog --no-shadow --title "$label_install VNC" \
+        --backtitle "$label_warning" \
+        --yes-label "$label_install" \
+        --no-label "$label_ignore" \
+        --yesno "$label_avnc_desc" \
+        20 $dialog_width
 
-    # Dar as opções de aplicativos VNC para o usuário escolher qual instalar (necessário para o funcionamento do Andistro)
-    dialog --no-shadow --title "$label_install VNC" \
-           --backtitle "$label_warning" \
-           --yes-label "$label_install" \
-           --no-label "$label_ignore" \
-           --yesno "$label_avnc_desc" \
-           20 $dialog_width
+dialog_retorno=$?
+clear
 
-    dialog_retorno=$?
+if [ $dialog_retorno -eq 0 ]; then
+    andistro --setup install-vnc
+else
     clear
+fi
 
-    if [ $dialog_retorno -eq 0 ]; then
-        andistro --setup install-vnc
-    else
-        clear
-    fi
-
-    # Questiona o atalho de inicialização rápida do Andistro
-    andistro --setup autoboot
+# Questiona o atalho de inicialização rápida do Andistro
+andistro --setup autoboot
 
 
-    # verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
-    if ! dpkg -l | grep -qw gnupg; then
-        pkg install --no-install-recommends gnupg -y > /dev/null 2>&1
-    fi
+# verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
+if ! dpkg -l | grep -qw gnupg; then
+    pkg install --no-install-recommends gnupg -y > /dev/null 2>&1
+fi
 
 
-    # verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
-    if ! dpkg -l | grep -qw coreutils; then
-        pkg install --no-install-recommends coreutils -y > /dev/null 2>&1
-    fi
+# verifica e instala o gnupg, necessário para a instalação de distribuições via chave GPG
+if ! dpkg -l | grep -qw coreutils; then
+    pkg install --no-install-recommends coreutils -y > /dev/null 2>&1
+fi
 
 clear
 
