@@ -2,11 +2,31 @@
 # GITHUB Version
 #curl -L "https://raw.githubusercontent.com/andistro/app/refs/heads/alpha/andistro_setup" | bash
 
+#Configura as teclas extras do Termux
+if ! grep -q "^# Andistro Extra keys$" ~/.termux/termux.properties 2>/dev/null; then
+  cat << 'EOF' >> ~/.termux/termux.properties
+
+
+#############################################################################
+# Andistro Extra keys
+#############################################################################
+extra-keys = [['ESC','/','-','HOME','UP','END','PGUP'], \
+              ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN'], \
+              ['DRAWER','DEL','BKSP','PASTE','','KEYBOARD','ENTER']]
+    
+EOF
+fi
+
+# Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
+sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
+
+# Recarrega as configurações do Termux para aplicar as mudanças
+termux-reload-settings
+termux-reload-settings </dev/tty
+
 sleep 2
 clear
 # Mensagens coloridas antes da barra de progresso
-
-
 
 RESET="\e[0m"
 BOLD="\e[1m"
@@ -286,27 +306,7 @@ bash "$HOME/termos.sh"
 chmod +x "$PREFIX/var/lib/andistro/lib/share/global"
 source "$PREFIX/var/lib/andistro/lib/share/global"
 
-#Configura as teclas extras do Termux
-if ! grep -q "^# Andistro Extra keys$" ~/.termux/termux.properties 2>/dev/null; then
-  cat << 'EOF' >> ~/.termux/termux.properties
 
-
-#############################################################################
-# Andistro Extra keys
-#############################################################################
-extra-keys = [['ESC','/','-','HOME','UP','END','PGUP'], \
-              ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN'], \
-              ['DRAWER','DEL','BKSP','PASTE','','KEYBOARD','ENTER']]
-    
-EOF
-fi
-
-# Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
-sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
-
-# Recarrega as configurações do Termux para aplicar as mudanças
-termux-reload-settings
-termux-reload-settings </dev/tty 
 
 
 # Solicita permissão de acesso ao armazenamento (necessário para o funcionamento do Andistro)
