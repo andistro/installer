@@ -373,4 +373,5 @@ fi
 
 clear
 
-andistro </dev/tty 
+termux-reload-settings </dev/tty
+andistro </dev/tty
