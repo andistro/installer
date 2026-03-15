@@ -21,6 +21,7 @@ EN="\e[44m${BOLD}${FG} Hello, please wait a moment ${RESET}"
 #DE="\e[43m${BOLD}${FG} Hallo, bitte warten ${RESET}"
 #IT="\e[42m${BOLD}${FG} Ciao, attendi un momento ${RESET}"
 
+echo
 # an
 echo -e "${BG_WHITE}${FG_BLACK}  a  ${RESET} ${BG_WHITE}${FG_BLACK}  n  ${RESET}"
 echo
