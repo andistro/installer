@@ -243,7 +243,7 @@ current_step=0
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
     #29 Todo o pacote de instalação
-    git clone --depth 1 -b beta https://github.com/andistro/installer.git installer-andistro_setup  > /dev/null 2>&1
+    git clone --depth 1 -b main https://github.com/andistro/installer.git installer-andistro_setup  > /dev/null 2>&1
     ((current_step++))
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
@@ -273,14 +273,12 @@ current_step=0
     ((current_step++))
     update_progress "$current_step" "$total_steps"; sleep 0.1
 
-    echo
-}
+    #33 Remove os arquivos temporários de instalação
+    rm -rf "$HOME/installer-andistro_setup"
+    rm -rf "$HOME/andistro_setup"
 
-rm -rf "$HOME/app-andistro_setup"
-rm -rf "$HOME/andistro_setup"
-
-chmod +x "$HOME/termos.sh"
-bash "$HOME/termos.sh"
+    chmod +x "$HOME/termos.sh"
+    bash "$HOME/termos.sh"
 
     #34 Torna executável o script global e chama ele para carregar as variáveis de ambiente globais do Andistro
     chmod +x "$PREFIX/var/lib/andistro/lib/share/global"
