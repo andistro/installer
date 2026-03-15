@@ -4,8 +4,10 @@
 <a href="#"><img src=""></a>
 </div>
 -->
-
-
+# 📥
+```bash
+curl -L "https://github.com/andistro/installer/releases/latest/download/andistro_setup" | bash
+```
 <br><br>
 
 <br>
