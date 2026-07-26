@@ -2,30 +2,6 @@
 # GITHUB Version
 #curl -L "https://raw.githubusercontent.com/andistro/app/refs/heads/alpha/andistro_setup" | bash
 
-#Configura as teclas extras do Termux
-if ! grep -q "^# Andistro Extra keys$" ~/.termux/termux.properties 2>/dev/null; then
-  cat << 'EOF' >> ~/.termux/termux.properties
-
-
-#############################################################################
-# Andistro Extra keys
-#############################################################################
-extra-keys = [['ESC','/','-','HOME','UP','END','PGUP'], \
-              ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN'], \
-              ['DRAWER','DEL','BKSP','PASTE','','KEYBOARD','ENTER']]
-    
-EOF
-fi
-
-# Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
-sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
-
-# Recarrega as configurações do Termux para aplicar as mudanças
-termux-reload-settings
-termux-reload-settings </dev/tty
-
-sleep 2
-clear
 # Mensagens coloridas antes da barra de progresso
 
 RESET="\e[0m"
@@ -55,6 +31,37 @@ echo -e "${BG_WHITE}${FG_BLACK}  t  ${RESET} ${BG_WHITE}${FG_BLACK}  r  ${RESET}
 echo
 
 echo -e "\n\n$PT\n\n$EN\n"
+
+# Caso seja instalado na versão Google Play
+if [[ "$TERMUX_VERSION" == *googleplay* ]]; then
+    echo "O Andistro Não é compatível com o Termux da Google Play Store"
+fi
+
+#Configura as teclas extras do Termux
+if ! grep -q "^# Andistro Extra keys$" ~/.termux/termux.properties 2>/dev/null; then
+  cat << 'EOF' >> ~/.termux/termux.properties
+
+
+#############################################################################
+# Andistro Extra keys
+#############################################################################
+extra-keys = [['ESC','/','-','HOME','UP','END','PGUP'], \
+              ['TAB','CTRL','ALT','LEFT','DOWN','RIGHT','PGDN'], \
+              ['DRAWER','DEL','BKSP','PASTE','','KEYBOARD','ENTER']]
+    
+EOF
+fi
+
+# Habilita a opção de permitir que aplicativos externos abram arquivos no Termux
+sed -i '/allow-external-apps/s/^# *//' ~/.termux/termux.properties
+
+# Recarrega as configurações do Termux para aplicar as mudanças
+termux-reload-settings
+termux-reload-settings </dev/tty
+
+sleep 2
+clear
+
 
 update_progress() {
     current_step=$1
