@@ -56,6 +56,11 @@ echo
 
 echo -e "\n\n$PT\n\n$EN\n"
 
+# Caso seja instalado na versão Google Play
+if [[ "$TERMUX_VERSION" == *googleplay* ]]; then
+    echo "O Andistro Não é compatível com o Termux da Google Play Store"
+fi
+
 update_progress() {
     current_step=$1
     total_steps=$2
