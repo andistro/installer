@@ -27,6 +27,12 @@
   
 </div>
 
+# 📥
+```bash
+curl -L "https://raw.githubusercontent.com/andistro/installer/refs/heads/beta/andistro_setup" | bash
+```
+<br><br>
+
 <br>
 
 ```bash 
